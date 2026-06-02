@@ -151,7 +151,15 @@ jobs:
 
       - name: 应用内核补丁
         run: |
+          scripts/stage-yaof-bbrv3.sh "$OPENWRT_DIR"
           scripts/stage-kernel-patches.sh "$OPENWRT_DIR"
+
+      - name: 显示 BBR 版本（补丁应用后）
+        run: |
+          export BBR_VERSION_PHASE="BBR 版本（补丁应用后）"
+          export BBR_VERSION_SOURCE_MODE="patch"
+          export BBR_VERSION_RECORD_FILE="$OPENWRT_DIR/.bbr-version.before"
+          scripts/show-bbr-version.sh "$OPENWRT_DIR"
 
       - name: 放置自定义 overlay 文件
         env:
@@ -189,6 +197,13 @@ jobs:
               exit 1
             fi
           fi
+
+      - name: 显示并比对 BBR 版本（编译完成后）
+        run: |
+          export BBR_VERSION_PHASE="BBR 版本（编译完成后）"
+          export BBR_VERSION_SOURCE_MODE="source"
+          export BBR_VERSION_EXPECT_FILE="$OPENWRT_DIR/.bbr-version.before"
+          scripts/show-bbr-version.sh "$OPENWRT_DIR"
 
       - name: 收集固件产物
         env:
