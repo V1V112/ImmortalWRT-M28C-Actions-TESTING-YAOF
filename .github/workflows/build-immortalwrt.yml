@@ -56,7 +56,7 @@ on:
         type: boolean
 
       enable_bbrv3:
-        description: "启用YAOF BBRv3；禁用则使用ImmortalWrt默认的BBR v1"
+        description: "启用 YAOF BBRv3；禁用则使用 ImmortalWrt 默认的 BBR v1"
         required: true
         default: true
         type: boolean
@@ -161,19 +161,19 @@ jobs:
           if [ "${{ inputs.enable_bbrv3 }}" = "true" ]; then
             scripts/stage-yaof-bbrv3.sh "$OPENWRT_DIR"
           else
-            echo "YAOF BBRv3 disabled; using ImmortalWrt default BBR v1."
+            echo "已禁用 YAOF BBRv3，将使用 ImmortalWrt 默认 BBR v1。"
           fi
           scripts/stage-kernel-patches.sh "$OPENWRT_DIR"
 
-      - name: Show BBR version after patch staging
+      - name: 显示应用补丁后的 BBR 版本
         run: |
-          export BBR_VERSION_PHASE="BBR version after patch staging"
+          export BBR_VERSION_PHASE="应用补丁后的 BBR 版本"
           if [ "${{ inputs.enable_bbrv3 }}" = "true" ]; then
             export BBR_VERSION_SOURCE_MODE="patch"
           else
             export BBR_VERSION_SOURCE_MODE="auto"
             export BBR_VERSION_FALLBACK="1"
-            export BBR_VERSION_FALLBACK_SOURCE="ImmortalWrt default tcp_bbr.c (BBR v1; YAOF BBRv3 disabled)"
+            export BBR_VERSION_FALLBACK_SOURCE="ImmortalWrt 默认 tcp_bbr.c（BBR v1；已禁用 YAOF BBRv3）"
           fi
           export BBR_VERSION_RECORD_FILE="$OPENWRT_DIR/.bbr-version.before"
           scripts/show-bbr-version.sh "$OPENWRT_DIR"
@@ -215,13 +215,13 @@ jobs:
             fi
           fi
 
-      - name: Show and compare BBR version after firmware build
+      - name: 显示并对比固件编译后的 BBR 版本
         run: |
-          export BBR_VERSION_PHASE="BBR version after firmware build"
+          export BBR_VERSION_PHASE="固件编译后的 BBR 版本"
           export BBR_VERSION_SOURCE_MODE="source"
           if [ "${{ inputs.enable_bbrv3 }}" != "true" ]; then
             export BBR_VERSION_FALLBACK="1"
-            export BBR_VERSION_FALLBACK_SOURCE="ImmortalWrt default tcp_bbr.c (BBR v1; no BBR_VERSION macro)"
+            export BBR_VERSION_FALLBACK_SOURCE="ImmortalWrt 默认 tcp_bbr.c（BBR v1；没有 BBR_VERSION 宏）"
           fi
           export BBR_VERSION_EXPECT_FILE="$OPENWRT_DIR/.bbr-version.before"
           scripts/show-bbr-version.sh "$OPENWRT_DIR"
