@@ -68,7 +68,7 @@ on:
         type: boolean
 
       enable_bbrv3:
-        description: "Enable YAOF BBRv3; disable to use ImmortalWrt default BBR v1"
+        description: "启用YAOF BBRv3；禁用则使用ImmortalWrt默认的BBR v1"
         required: true
         default: true
         type: boolean
@@ -166,6 +166,7 @@ jobs:
           ./scripts/feeds install -a
           cd "$PROJECT_DIR"
           scripts/prepare-packages.sh "$OPENWRT_DIR"
+          scripts/apply-compile-optimizations.sh "$OPENWRT_DIR"
 
       - name: 应用内核补丁
         run: |
