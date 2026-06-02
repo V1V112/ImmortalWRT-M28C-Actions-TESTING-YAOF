@@ -14,6 +14,8 @@ BBR_VERSION_PHASE="${BBR_VERSION_PHASE:-BBR Version}"
 BBR_VERSION_SOURCE_MODE="${BBR_VERSION_SOURCE_MODE:-auto}"
 BBR_VERSION_RECORD_FILE="${BBR_VERSION_RECORD_FILE:-}"
 BBR_VERSION_EXPECT_FILE="${BBR_VERSION_EXPECT_FILE:-}"
+BBR_VERSION_FALLBACK="${BBR_VERSION_FALLBACK:-}"
+BBR_VERSION_FALLBACK_SOURCE="${BBR_VERSION_FALLBACK_SOURCE:-fallback value}"
 
 kernel_patchver="$(
   awk -F ':=' '/^KERNEL_PATCHVER:=/ { gsub(/[[:space:]]/, "", $2); print $2; exit }' "$OPENWRT_DIR/target/linux/rockchip/Makefile"
@@ -81,6 +83,9 @@ fi
 if [ -n "$result" ]; then
   detected_version="${result%%$'\t'*}"
   detected_source="${result#*$'\t'}"
+elif [ -n "$BBR_VERSION_FALLBACK" ]; then
+  detected_version="$BBR_VERSION_FALLBACK"
+  detected_source="$BBR_VERSION_FALLBACK_SOURCE"
 else
   detected_version="unknown"
   detected_source="not found in staged patches or prepared kernel source"
