@@ -236,6 +236,7 @@ local-packages/<collection>/<package-name>/Makefile
 - `prepare-packages.sh`：克隆 `package-sources.conf` 中的单包源码，复制 `local-packages/` 中的本地包，并移除上游冲突包。
 - `stage-kernel-patches.sh`：把 `patches/kernel/generic/*.patch` 和 `patches/kernel/rockchip/*.patch` 放入 ImmortalWrt 内核补丁目录。
 - `stage-overlay.sh`：把 `files/` 注入 ImmortalWrt 的 rootfs overlay，并特殊处理 `files/usr/bin/`。
+- `overlay-bin-common.sh`：`stage-overlay.sh` 和 `fetch-custom-config.sh` 共享的 `/usr/bin` 二进制、脚本和压缩包识别逻辑。
 - `generate-config.sh`：合并 `target.config`、`packages.txt`、`configs/custom.config`、`extra_packages` 和 `extra_config`，生成最终 `.config`。
 
 ## 修改软件包
