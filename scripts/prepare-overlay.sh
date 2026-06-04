@@ -7,6 +7,7 @@
 #   CUSTOM_CONFIG_REPO_URL: 私人配置仓库 URL (可选)
 #   CUSTOM_CONFIG_BRANCH: 私人配置仓库分支，默认: main
 #   CUSTOM_CONFIG_TOKEN: GitHub/Gitee Token，用于私有仓库认证 (可选)
+#   CUSTOM_CONFIG_REQUIRED: 私人配置拉取失败时是否终止构建，默认: false
 #
 # 用法: prepare-overlay.sh <openwrt-dir>
 
@@ -27,10 +28,18 @@ REPO_URL="${CUSTOM_CONFIG_REPO_URL:-}"
 if [ -n "$REPO_URL" ]; then
   BRANCH="${CUSTOM_CONFIG_BRANCH:-main}"
   TOKEN="${CUSTOM_CONFIG_TOKEN:-}"
+  REQUIRED="${CUSTOM_CONFIG_REQUIRED:-false}"
   
   log "从私人仓库拉取配置文件..."
   "$SCRIPT_DIR/fetch-custom-config.sh" "$OPENWRT_DIR" "$REPO_URL" "$BRANCH" "$TOKEN" || {
-    warn "无法从私人仓库拉取配置，继续使用本地 files 目录"
+    case "${REQUIRED,,}" in
+      1|true|yes|y)
+        die "无法从私人仓库拉取配置，且 CUSTOM_CONFIG_REQUIRED=true"
+        ;;
+      *)
+        warn "无法从私人仓库拉取配置，继续使用本地 files 目录"
+        ;;
+    esac
   }
 fi
 

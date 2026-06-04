@@ -26,6 +26,8 @@
 
 追加二进制工具：直接放可执行文件、目录或压缩包到 `files/usr/bin/`。目录和压缩包会优先选择 Linux aarch64/arm64 ELF，其次选择脚本。
 
+使用私人配置仓库：运行 workflow 时填写 `custom_config_repo` 和 `custom_config_branch`。如果缺少私人配置就不应继续构建，把 `custom_config_required` 设为 `true`。
+
 ## 编译失败排查顺序
 
 1. 看 `Generate .config` 步骤，确认关键包是否被选中。

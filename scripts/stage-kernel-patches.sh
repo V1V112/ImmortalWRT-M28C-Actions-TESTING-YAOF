@@ -50,4 +50,4 @@ stage_patches \
   "$OPENWRT_DIR/target/linux/generic/hack"
 
 apply_openwrt_patches \
-  "$PROJECT_DIR/patches/kernel/rockchip" \
+  "$PROJECT_DIR/patches/kernel/rockchip"

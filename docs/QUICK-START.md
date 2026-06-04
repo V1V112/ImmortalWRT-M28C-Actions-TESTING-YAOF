@@ -56,37 +56,24 @@ git commit -m "initial: create openwrt configuration structure"
 git push origin main
 ```
 
-### 步骤 5: 修改 GitHub Actions 工作流
+### 步骤 5: 运行时填写私人仓库参数
 
-编辑 `.github/workflows/build-immortalwrt.yml`，修改"放置自定义 overlay 文件"步骤：
+当前 workflow 已内置私人配置仓库支持，不需要手工修改 YAML。运行 Actions 时填写：
 
-**原代码:**
-```yaml
-      - name: 放置自定义 overlay 文件
-        run: |
-          scripts/stage-overlay.sh "$OPENWRT_DIR"
-```
+| 参数 | 建议值 |
+| --- | --- |
+| `custom_config_repo` | `https://github.com/YOUR_USERNAME/openwrt-configs.git` |
+| `custom_config_branch` | `main` |
+| `custom_config_required` | 如果缺少私人配置就不应继续构建，设为 `true` |
 
-**新代码:**
-```yaml
-      - name: 放置自定义 overlay 文件
-        env:
-          CUSTOM_CONFIG_REPO_URL: https://github.com/YOUR_USERNAME/openwrt-configs.git
-          CUSTOM_CONFIG_BRANCH: main
-          CUSTOM_CONFIG_TOKEN: ${{ secrets.CUSTOM_CONFIG_TOKEN }}
-        run: |
-          chmod +x scripts/prepare-overlay.sh
-          scripts/prepare-overlay.sh "$OPENWRT_DIR"
-```
-
-**记得替换:**
-- `YOUR_USERNAME`: 你的 GitHub 用户名
+如果 `custom_config_repo` 留空，构建只会使用本项目的本地 `files` 目录。
 
 ### 步骤 6: 测试构建
 
 1. 进入项目 → Actions → 编译 ImmortalWrt M28C 固件
 2. 点击 "Run workflow"
-3. 等待编译完成
+3. 填写 `custom_config_repo` 等参数
+4. 等待编译完成
 
 ✅ 完成！现在你的 OpenWrt 配置存储在私人仓库中了。
 
@@ -172,12 +159,12 @@ curl -H "Authorization: token $TOKEN" \
 ImmortalWRT-M28C-Actions-TESTING/
 ├── .github/
 │   └── workflows/
-│       ├── build-immortalwrt.yml (原始)
-│       └── build-immortalwrt-with-private-config.yml (新增，带私人仓库支持)
+│       ├── build-immortalwrt.yml (主构建 workflow)
+│       └── build-immortalwrt-with-private-config.yml (兼容入口，调用主 workflow)
 ├── scripts/
-│   ├── fetch-custom-config.sh (新增)
-│   ├── prepare-overlay.sh (新增)
-│   ├── stage-overlay.sh (原始)
+│   ├── fetch-custom-config.sh
+│   ├── prepare-overlay.sh
+│   ├── stage-overlay.sh
 │   └── ...其他脚本
 ├── files/
 │   ├── etc/

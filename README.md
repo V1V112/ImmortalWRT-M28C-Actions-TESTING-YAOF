@@ -109,18 +109,23 @@ immortalwrt-<run_number>-m28c-<ref>
 | `immortalwrt_version` | 选择 ImmortalWrt 分支或标签，默认 `openwrt-25.12` |
 | `custom_ref` | 当版本选择 `custom` 时填写，例如某个分支、标签或 commit |
 | `profile` | 构建配置方案，目前只有 `m28c` |
+| `custom_config_repo` | 可选私人 OpenWrt 配置仓库 URL；留空则只使用本地 `files` |
+| `custom_config_branch` | 私人配置仓库分支、标签或可拉取引用，默认 `main` |
+| `custom_config_required` | 私人配置仓库拉取失败时是否直接终止构建 |
 | `extra_feeds` | 临时追加 OpenWrt feed，每行一个 `src-git` 配置 |
 | `extra_packages` | 临时追加或禁用软件包，包名前加 `-` 表示禁用 |
 | `extra_config` | 临时追加原始 Kconfig 配置行 |
 | `upload_packages` | 是否额外上传 `bin/packages` |
 | `verbose_fallback` | 编译失败后是否用 `make -j1 V=s` 重新输出详细日志 |
+| `enable_bbrv3` | 是否启用 YAOF BBRv3；禁用时使用 ImmortalWrt 默认 BBR v1 |
 
 ## 仓库结构
 
 ```text
 .
 |-- .github/workflows/             # GitHub Actions 编译流程
-|   `-- build-immortalwrt.yml
+|   |-- build-immortalwrt.yml
+|   `-- build-immortalwrt-with-private-config.yml
 |-- configs/                       # 额外 Kconfig 配置
 |   `-- custom.config
 |-- docs/                          # 补充维护文档
@@ -148,7 +153,8 @@ immortalwrt-<run_number>-m28c-<ref>
 
 保存 GitHub Actions 编译流程。
 
-- `build-immortalwrt.yml`：主 workflow。负责解析版本参数、释放磁盘空间、安装依赖、拉取 ImmortalWrt、恢复缓存、合并 feeds、准备软件包、应用补丁、注入 overlay、生成 `.config`、下载源码、编译固件并上传 Artifacts。
+- `build-immortalwrt.yml`：主 workflow，也是唯一的实际构建实现。负责解析版本参数、释放磁盘空间、安装依赖、拉取 ImmortalWrt、恢复 `dl` 与 `ccache` 缓存、合并 feeds、准备软件包、应用补丁、注入 overlay、生成 `.config`、下载源码、编译固件并上传 Artifacts。
+- `build-immortalwrt-with-private-config.yml`：兼容入口。它保留“支持私人配置仓库”的手动运行入口，但内部调用 `build-immortalwrt.yml`，避免维护两份构建步骤。
 
 ### `configs/`
 
@@ -218,7 +224,7 @@ local-packages/<collection>/<package-name>/Makefile
 - `patches/kernel/rockchip/`：Rockchip 平台内核补丁目录。
 - 当前补丁：`999-usb-serial-option-add-mt5700-3466-3301.patch`，用于补充 MT5700 USB 串口识别。
 
-`scripts/stage-kernel-patches.sh` 会自动检测 rockchip 目标使用的 `KERNEL_PATCHVER`，并把通用补丁复制到 `target/linux/generic/hack-<kernel-version>/`，把 Rockchip 平台补丁复制到 `target/linux/rockchip/patches-<kernel-version>/`。通用补丁目录不存在时会回退到 `target/linux/generic/hack/`。
+`scripts/stage-kernel-patches.sh` 会自动检测 rockchip 目标使用的 `KERNEL_PATCHVER`。通用补丁会复制到 `target/linux/generic/hack-<kernel-version>/`，目录不存在时回退到 `target/linux/generic/hack/`；Rockchip 平台补丁会作为 OpenWrt 源码树补丁直接用 `patch -p1 --forward` 应用。
 
 ### `profiles/`
 
@@ -234,7 +240,7 @@ local-packages/<collection>/<package-name>/Makefile
 - `common.sh`：公共函数，如日志、错误退出、路径检测。
 - `add-feeds.sh`：合并 `feeds/*.feeds` 和 workflow 的 `extra_feeds`，并跳过重复 feed。
 - `prepare-packages.sh`：克隆 `package-sources.conf` 中的单包源码，复制 `local-packages/` 中的本地包，并移除上游冲突包。
-- `stage-kernel-patches.sh`：把 `patches/kernel/generic/*.patch` 和 `patches/kernel/rockchip/*.patch` 放入 ImmortalWrt 内核补丁目录。
+- `stage-kernel-patches.sh`：把 `patches/kernel/generic/*.patch` 放入 ImmortalWrt 通用内核补丁目录，并直接应用 `patches/kernel/rockchip/*.patch` 中的 OpenWrt 源码树补丁。
 - `stage-overlay.sh`：把 `files/` 注入 ImmortalWrt 的 rootfs overlay，并特殊处理 `files/usr/bin/`。
 - `overlay-bin-common.sh`：`stage-overlay.sh` 和 `fetch-custom-config.sh` 共享的 `/usr/bin` 二进制、脚本和压缩包识别逻辑。
 - `generate-config.sh`：合并 `target.config`、`packages.txt`、`configs/custom.config`、`extra_packages` 和 `extra_config`，生成最终 `.config`。
@@ -335,8 +341,10 @@ cd "$OPENWRT_DIR"
 cd "$PROJECT_DIR"
 
 scripts/prepare-packages.sh "$OPENWRT_DIR"
+scripts/apply-compile-optimizations.sh "$OPENWRT_DIR"
+scripts/stage-yaof-bbrv3.sh "$OPENWRT_DIR"   # 可选；对应 workflow 的 enable_bbrv3=true
 scripts/stage-kernel-patches.sh "$OPENWRT_DIR"
-scripts/stage-overlay.sh "$OPENWRT_DIR"
+scripts/prepare-overlay.sh "$OPENWRT_DIR"    # 如未设置 CUSTOM_CONFIG_REPO_URL，则等价于本地 overlay
 scripts/generate-config.sh "$OPENWRT_DIR" "profiles/m28c"
 
 cd "$OPENWRT_DIR"

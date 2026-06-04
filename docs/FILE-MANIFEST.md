@@ -7,15 +7,15 @@
 
 ## 修改的文件
 
-### 1. scripts/fetch-custom-config.sh ⭐
+### 1. scripts/overlay-bin-common.sh ⭐
 
 **类型**: 核心代码改进  
 **变更类型**: 重构  
-**行数变化**: 110 → 290 行 (+165%)  
+**行数变化**: 新增公共实现
 
 **改进内容**:
-- 添加 5 个新函数（共 +450 行）
-- 改进文件处理流程
+- 抽取 5 个公共函数
+- 让本地 overlay 与私人配置仓库复用同一套文件处理流程
 - 添加本地优先级保护
 - 改进错误处理
 
@@ -165,7 +165,7 @@ install_detected_binary()     - 安装最优二进制
 
 | 类别 | 数量 | 详情 |
 |------|------|------|
-| 修改的文件 | 2 个 | scripts/ 和 docs/ 各 1 个 |
+| 修改的文件 | 多个 | scripts/、workflow 和 docs 同步维护 |
 | 新增文档 | 6 个 | 全部在 docs/ 目录 |
 | 总计 | 8 个 | 涉及 2 个子目录 |
 
@@ -173,7 +173,7 @@ install_detected_binary()     - 安装最优二进制
 
 | 项目 | 值 |
 |------|-----|
-| 代码增加 | +450 行 |
+| 代码增加 | 公共函数集中到 overlay-bin-common.sh |
 | 文档增加 | +1870 行 |
 | 总计增加 | +2320 行 |
 | 新函数 | 5 个 |
@@ -197,7 +197,8 @@ install_detected_binary()     - 安装最优二进制
 ImmortalWRT-M28C-Actions-TESTING/
 │
 ├─ scripts/
-│  └─ fetch-custom-config.sh          [修改] ⭐
+│  ├─ overlay-bin-common.sh           [新增/公共实现] ⭐
+│  └─ fetch-custom-config.sh          [复用公共实现]
 │
 └─ docs/
    ├─ PRIVATE-REPO-INTEGRATION.md      [修改] 📝

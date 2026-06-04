@@ -29,7 +29,7 @@
 
 ```
 1️⃣ 代码层面
-   └─ 移植 5 个核心函数到 fetch-custom-config.sh
+   └─ 抽取 5 个核心函数到 overlay-bin-common.sh
       ├─ 压缩包识别和解压
       ├─ 二进制文件评分
       ├─ 架构自动选择
@@ -55,12 +55,12 @@
 
 ### 修改的文件
 
-#### 1. **scripts/fetch-custom-config.sh** ⭐ 核心改进
+#### 1. **scripts/overlay-bin-common.sh** ⭐ 核心改进
 
 **改进内容**：
-- 行数: 110 行 → 290 行（+165%）
-- 新增函数: 5 个
-- 总代码变更: +450 行
+- 抽出本地 overlay 与私人配置仓库共用的 `/usr/bin` 识别逻辑
+- 公共函数: 5 个
+- `stage-overlay.sh` 和 `fetch-custom-config.sh` 共享同一套评分、解压和安装逻辑
 
 **关键函数**：
 ```bash
@@ -177,7 +177,7 @@ install_detected_binary()     # 安装最优二进制
 
 | 项目 | 之前 | 现在 | 变化 |
 |------|------|------|------|
-| fetch-custom-config.sh | 110 行 | 290 行 | +165% |
+| overlay-bin-common.sh | 0 行 | 120+ 行 | 新增公共实现 |
 | 文档文件数 | 4 个 | 8 个 | +100% |
 | 文档总行数 | 500 行 | 1870 行 | +274% |
 | 新增测试用例 | 0 | 7 个 | 新增 |

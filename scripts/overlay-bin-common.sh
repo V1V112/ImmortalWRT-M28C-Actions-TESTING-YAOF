@@ -2,7 +2,10 @@
 
 # Shared helpers for staging executable files from overlay usr/bin directories.
 # Callers should source scripts/common.sh first and set USR_BIN_DST before
-# calling install_detected_binary.
+# calling install_detected_binary. OVERLAY_BIN_NAME_MODE controls the output
+# filename for detected binaries:
+#   candidate  keep the chosen candidate basename, except generic names
+#   preferred  always use the directory/archive-derived preferred name
 
 strip_archive_ext() {
   local name="$1"
@@ -107,6 +110,7 @@ candidate_score() {
 install_detected_binary() {
   local search_dir="$1"
   local preferred="$2"
+  local name_mode="${OVERLAY_BIN_NAME_MODE:-candidate}"
   local best=""
   local best_score=-999
   local file_path score dest_name
@@ -123,10 +127,20 @@ install_detected_binary() {
 
   [ -n "$best" ] && [ "$best_score" -gt 0 ] || die "No executable binary/script found in $search_dir"
 
-  dest_name="$(basename "$best")"
-  case "$dest_name" in
-    bin|linux|arm64|aarch64|release)
+  case "$name_mode" in
+    preferred)
       dest_name="$preferred"
+      ;;
+    candidate)
+      dest_name="$(basename "$best")"
+      case "$dest_name" in
+        bin|linux|arm64|aarch64|release)
+          dest_name="$preferred"
+          ;;
+      esac
+      ;;
+    *)
+      die "Unsupported OVERLAY_BIN_NAME_MODE: $name_mode"
       ;;
   esac
 

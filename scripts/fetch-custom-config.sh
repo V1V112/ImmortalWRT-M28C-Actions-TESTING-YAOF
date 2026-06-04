@@ -21,34 +21,53 @@ need_dir "$OPENWRT_DIR"
 
 PROJECT_DIR="${PROJECT_DIR:-$(project_dir)}"
 TEMP_DIR="${OPENWRT_DIR}/.custom-config-temp"
+CLONE_LOG="${OPENWRT_DIR}/.custom-config-clone.log"
 DST_ROOT="${OPENWRT_DIR}/files"
 USR_BIN_SRC=""
 USR_BIN_DST="$DST_ROOT/usr/bin"
 
 # ===== 主逻辑 =====
 
+cleanup() {
+  rm -rf "$TEMP_DIR"
+  rm -f "$CLONE_LOG"
+}
+trap cleanup EXIT
+
 # 清理旧的临时目录
 [ -d "$TEMP_DIR" ] && rm -rf "$TEMP_DIR"
 mkdir -p "$TEMP_DIR"
 
 # 构建认证 URL
+AUTH_REPO_URL="$REPO_URL"
+DISPLAY_REPO_URL="$REPO_URL"
 if [ -n "$TOKEN" ]; then
+  if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    printf '::add-mask::%s\n' "$TOKEN"
+  fi
+
   # 支持 HTTPS 令牌认证
   if [[ "$REPO_URL" == https://* ]]; then
-    REPO_URL="${REPO_URL#https://}"
-    REPO_URL="https://oauth2:${TOKEN}@${REPO_URL}"
+    AUTH_REPO_URL="${REPO_URL#https://}"
+    AUTH_REPO_URL="https://oauth2:${TOKEN}@${AUTH_REPO_URL}"
   fi
 fi
 
 # Clone 私人仓库
-echo "正在从 $REPO_URL (分支: $BRANCH) 拉取配置..."
-if ! git clone --depth 1 --branch "$BRANCH" "$REPO_URL" "$TEMP_DIR" 2>&1; then
+echo "正在从 $DISPLAY_REPO_URL (分支: $BRANCH) 拉取配置..."
+if ! git clone --depth 1 --branch "$BRANCH" "$AUTH_REPO_URL" "$TEMP_DIR" >"$CLONE_LOG" 2>&1; then
+  if [ -n "$TOKEN" ]; then
+    grep -Fv -- "$TOKEN" "$CLONE_LOG" >&2 || true
+  else
+    cat "$CLONE_LOG" >&2 || true
+  fi
   echo "错误: 拉取配置失败。请检查:"
   echo "  1. 仓库 URL 是否正确"
   echo "  2. 分支名称是否存在"
   echo "  3. 令牌是否有效（如果使用私有仓库）"
   exit 1
 fi
+rm -f "$CLONE_LOG"
 
 # 自动检测仓库结构
 # 支持两种结构：
@@ -156,8 +175,5 @@ if [ -n "$USR_BIN_SRC" ] && [ -d "$USR_BIN_SRC" ]; then
   done
   shopt -u nullglob dotglob
 fi
-
-# 清理临时目录
-rm -rf "$TEMP_DIR"
 
 echo "配置文件合并完成！"

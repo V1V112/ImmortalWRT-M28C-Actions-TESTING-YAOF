@@ -14,7 +14,7 @@
 
 **根本原因**：`fetch-custom-config.sh` 脚本使用简单的 `find + cp` 操作，没有实现 `stage-overlay.sh` 中的智能识别逻辑。
 
-**解决方案**：将 `stage-overlay.sh` 中关于 `/usr/bin` 处理的核心函数移植到 `fetch-custom-config.sh`，实现完整的智能处理流程。
+**解决方案**：将 `/usr/bin` 处理逻辑抽到 `scripts/overlay-bin-common.sh`，由 `stage-overlay.sh` 和 `fetch-custom-config.sh` 共同复用，避免两份实现漂移。
 
 ---
 
@@ -22,9 +22,9 @@
 
 ### 代码修改
 
-#### 1. scripts/fetch-custom-config.sh 增强
+#### 1. scripts/overlay-bin-common.sh 抽取公共逻辑
 
-**添加的核心函数**（共 5 个）：
+**公共核心函数**（共 5 个）：
 
 ```bash
 1. strip_archive_ext()         # 去除压缩包扩展名
@@ -185,9 +185,9 @@
 ✅ **完全向后兼容**
 
 - `stage-overlay.sh` 保持不变
-- `prepare-overlay.sh` 保持不变
+- `prepare-overlay.sh` 默认仍可在私人配置失败时回退本地 `files`
 - 现有的工作流无需修改
-- 如不设置 `CUSTOM_CONFIG_REPO_URL`，行为完全相同
+- 如不设置 `custom_config_repo` / `CUSTOM_CONFIG_REPO_URL`，行为完全相同
 
 ---
 

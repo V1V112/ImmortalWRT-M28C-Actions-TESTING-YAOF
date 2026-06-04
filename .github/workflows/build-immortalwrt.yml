@@ -28,6 +28,24 @@ on:
         options:
           - m28c
 
+      custom_config_repo:
+        description: "可选：私人 OpenWrt 配置仓库 URL；留空则只使用本地 files"
+        required: false
+        default: ""
+        type: string
+
+      custom_config_branch:
+        description: "私人配置仓库分支、标签或可拉取引用"
+        required: false
+        default: "main"
+        type: string
+
+      custom_config_required:
+        description: "私人配置仓库拉取失败时是否直接终止构建"
+        required: true
+        default: false
+        type: boolean
+
       extra_feeds:
         description: "可选：额外 feeds 源，每行一个 src-git 配置"
         required: false
@@ -60,6 +78,60 @@ on:
         required: true
         default: true
         type: boolean
+
+  workflow_call:
+    inputs:
+      immortalwrt_version:
+        required: false
+        type: string
+        default: "openwrt-25.12"
+      custom_ref:
+        required: false
+        type: string
+        default: ""
+      profile:
+        required: false
+        type: string
+        default: "m28c"
+      custom_config_repo:
+        required: false
+        type: string
+        default: ""
+      custom_config_branch:
+        required: false
+        type: string
+        default: "main"
+      custom_config_required:
+        required: false
+        type: boolean
+        default: false
+      extra_feeds:
+        required: false
+        type: string
+        default: ""
+      extra_packages:
+        required: false
+        type: string
+        default: ""
+      extra_config:
+        required: false
+        type: string
+        default: ""
+      upload_packages:
+        required: false
+        type: boolean
+        default: false
+      verbose_fallback:
+        required: false
+        type: boolean
+        default: true
+      enable_bbrv3:
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      CUSTOM_CONFIG_TOKEN:
+        required: false
 
 permissions:
   contents: read
@@ -132,16 +204,24 @@ jobs:
           git checkout --detach FETCH_HEAD
           git log --oneline -1
 
-      - name: 恢复源码下载缓存和 ccache 缓存
+      - name: 恢复源码下载缓存
         uses: actions/cache@v4
         with:
-          path: |
-            ${{ env.OPENWRT_DIR }}/dl
-            ${{ env.OPENWRT_DIR }}/.ccache
-          key: immortalwrt-${{ steps.resolve_ref.outputs.safe_ref }}-${{ hashFiles('profiles/**', 'configs/**', 'feeds/**', 'scripts/**', 'package/**', 'files/**') }}
+          path: ${{ env.OPENWRT_DIR }}/dl
+          key: immortalwrt-dl-${{ steps.resolve_ref.outputs.safe_ref }}-${{ hashFiles('feeds/*.feeds', 'feeds/package-sources.conf') }}
           restore-keys: |
-            immortalwrt-${{ steps.resolve_ref.outputs.safe_ref }}-
-            immortalwrt-
+            immortalwrt-dl-${{ steps.resolve_ref.outputs.safe_ref }}-
+            immortalwrt-dl-
+
+      - name: 恢复 ccache 缓存
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.OPENWRT_DIR }}/.ccache
+          key: immortalwrt-ccache-${{ steps.resolve_ref.outputs.safe_ref }}-${{ inputs.profile }}-${{ hashFiles('profiles/**', 'configs/**', 'feeds/**', 'scripts/**', 'patches/**', 'local-packages/**', 'files/**') }}
+          restore-keys: |
+            immortalwrt-ccache-${{ steps.resolve_ref.outputs.safe_ref }}-${{ inputs.profile }}-
+            immortalwrt-ccache-${{ steps.resolve_ref.outputs.safe_ref }}-
+            immortalwrt-ccache-
 
       - name: 准备 feeds 和自定义软件包
         env:
@@ -180,8 +260,9 @@ jobs:
 
       - name: 放置自定义 overlay 文件
         env:
-          CUSTOM_CONFIG_REPO_URL: https://github.com/V1V112/M28C_config.git
-          CUSTOM_CONFIG_BRANCH: main
+          CUSTOM_CONFIG_REPO_URL: ${{ inputs.custom_config_repo }}
+          CUSTOM_CONFIG_BRANCH: ${{ inputs.custom_config_branch }}
+          CUSTOM_CONFIG_REQUIRED: ${{ inputs.custom_config_required }}
           CUSTOM_CONFIG_TOKEN: ${{ secrets.CUSTOM_CONFIG_TOKEN }}
         run: |
           chmod +x scripts/prepare-overlay.sh

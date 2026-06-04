@@ -17,7 +17,7 @@ myapp.tar.gz
 └── README.md      ← 自动忽略
 ```
 
-**结果**：编译时自动解压并安装 `myapp-aarch64` 为 `/usr/bin/myapp`
+**结果**：编译时自动解压并安装 `myapp-aarch64`，默认路径是 `/usr/bin/myapp-aarch64`
 
 ### 场景 2：目录格式多个二进制
 
@@ -29,6 +29,12 @@ files/usr/bin/mytool/
 ```
 
 **结果**：自动选择 `mytool-aarch64`
+
+如需把目录或压缩包内选中的二进制统一安装成目录名/压缩包名，可以在运行脚本前设置：
+
+```bash
+export OVERLAY_BIN_NAME_MODE=preferred
+```
 
 ### 场景 3：脚本文件
 
