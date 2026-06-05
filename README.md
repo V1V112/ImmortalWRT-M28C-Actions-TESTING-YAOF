@@ -69,7 +69,34 @@
 
 - M28C 上游 DTS 已声明 `pwm-fan`。
 - 固件内置 `kmod-hwmon-pwmfan`。
-- 仓库通过 Rockchip DTS 补丁固定默认 PWM 风扇曲线，由内核 thermal 框架自动调速。
+- 仓库通过 Rockchip DTS 补丁固定默认 PWM 风扇曲线，由内核 thermal 框架自动调速，不依赖用户态风扇守护进程。
+- 当前曲线按 RK3528A / M28C 接近 75℃ 时可能不稳定的情况设计，目标是在 70℃ 前进入满速风扇档，给重启临界温度留出余量。
+
+默认温控点如下：
+
+| 温度 | 风扇 PWM | thermal cooling state |
+| --- | ---: | ---: |
+| 低于 38℃ | 0 | 0 |
+| 38℃ | 90 | 1 |
+| 45℃ | 120 | 2 |
+| 50℃ | 150 | 3 |
+| 55℃ | 180 | 4 |
+| 60℃ | 205 | 5 |
+| 63℃ | 230 | 6 |
+| 66℃ | 245 | 7 |
+| 68℃ 及以上 | 255 | 8 |
+
+每个温控点设置 3℃ 回落温差，避免风扇在边界温度频繁跳档。实际运行时可通过以下命令查看温度和风扇 cooling state：
+
+```sh
+for z in /sys/class/thermal/thermal_zone*; do
+  echo "$z $(cat "$z/type" 2>/dev/null) $(cat "$z/temp" 2>/dev/null)"
+done
+
+for c in /sys/class/thermal/cooling_device*; do
+  echo "$c $(cat "$c/type" 2>/dev/null) state=$(cat "$c/cur_state" 2>/dev/null)"
+done
+```
 
 ### eBPF / BTF 能力
 
@@ -222,7 +249,8 @@ local-packages/<collection>/<package-name>/Makefile
 
 - `patches/kernel/generic/`：通用内核补丁目录。
 - `patches/kernel/rockchip/`：Rockchip 平台内核补丁目录。
-- 当前补丁：`999-usb-serial-option-add-mt5700-3466-3301.patch`，用于补充 MT5700 USB 串口识别。
+- 当前通用内核补丁：`999-usb-serial-option-add-mt5700-3466-3301.patch`，用于补充 MT5700 USB 串口识别。
+- 当前 Rockchip 平台补丁：`901-arm64-dts-rockchip-rk3528-m28c-use-kernel-pwm-fan-curve.patch`，用于调整 M28C 的内核 PWM 风扇曲线和 thermal cooling map。
 
 `scripts/stage-kernel-patches.sh` 会自动检测 rockchip 目标使用的 `KERNEL_PATCHVER`。通用补丁会复制到 `target/linux/generic/hack-<kernel-version>/`，目录不存在时回退到 `target/linux/generic/hack/`；Rockchip 平台补丁会作为 OpenWrt 源码树补丁直接用 `patch -p1 --forward` 应用。
 
