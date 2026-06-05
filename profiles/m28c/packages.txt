@@ -38,7 +38,7 @@ kmod-inet-diag
 
 # TCP 拥塞控制算法支持
 kmod-tcp-bbr
-kmod-sched-extra
+kmod-sched
 
 # ttyd 网页终端
 ttyd

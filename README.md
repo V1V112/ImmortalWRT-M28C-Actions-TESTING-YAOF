@@ -36,7 +36,38 @@
 - 内置 nftables、NAT、flow offload、TProxy、socket match 等相关内核模块。
 - 内置 `ip-full`、`tc-full`、`ethtool`、`curl`、`wget-ssl` 等常用网络工具。
 - 内置 `kmod-tcp-bbr`，支持 BBR 拥塞控制。
-- 内置 `kmod-tun`、`kmod-ifb`、`kmod-sched-*` 等流量控制和代理常用模块。
+- 内置 `kmod-sched`、`kmod-sched-core`、`kmod-sched-bpf`、`kmod-ifb`、`kmod-tun` 等流量控制和代理常用模块。
+- `kmod-sched` 提供 Linux `sch_fq`，用于 `net.core.default_qdisc=fq`。注意它不是 `fq_codel` 或 `fq_pie`，也不是旧配置里容易误写的 `kmod-sched-extra`。
+
+### BBR 与 fq 队列
+
+OpenWrt/ImmortalWrt 默认常见队列是 `fq_codel`，但 BBR 推荐配合 Linux `fq` qdisc 使用。当前 profile 已内置：
+
+- `kmod-tcp-bbr`：提供 BBR 拥塞控制算法。
+- `kmod-sched`：提供 `sch_fq.ko`，也就是 `tc qdisc ... fq` 和 `net.core.default_qdisc=fq` 需要的内核模块。
+- `tc-full`：提供完整 `tc` 工具，便于手动查看和测试 qdisc。
+
+如果私人配置仓库中需要默认启用 BBR + fq，可放入类似配置：
+
+```text
+files/etc/sysctl.d/99-bbr.conf
+```
+
+```conf
+net.ipv4.tcp_congestion_control=bbr
+net.core.default_qdisc=fq
+```
+
+刷入后可用以下命令验证：
+
+```sh
+lsmod | grep sch_fq
+sysctl net.ipv4.tcp_congestion_control net.core.default_qdisc
+tc qdisc replace dev eth0 root fq
+tc -s qdisc show dev eth0
+```
+
+如果 `tc qdisc ... fq` 提示 `Specified qdisc not found` 或 `No such file or directory`，优先检查 `kmod-sched` 是否被最终 `.config` 保留，以及 `sch_fq` 是否已加载。
 
 ### 5G 模块支持
 

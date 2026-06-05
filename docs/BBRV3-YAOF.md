@@ -28,8 +28,32 @@ When disabled:
 1. YAOF BBRv3 patches are not fetched or staged.
 2. The build uses ImmortalWrt's default `tcp_bbr.c`, treated as BBR v1.
 3. `kmod-tcp-bbr` is still built from `profiles/m28c/packages.txt`.
-4. `files/etc/sysctl.d/99-bbrv3.conf` still selects `fq` and `bbr`, so the
+4. `kmod-sched` is still built from `profiles/m28c/packages.txt`; this package
+   provides `sch_fq.ko`, which is required by `net.core.default_qdisc=fq`.
+5. `files/etc/sysctl.d/99-bbrv3.conf` still selects `fq` and `bbr`, so the
    active algorithm is the default BBR implementation from the built kernel.
+
+## fq qdisc Support
+
+For BBR, use Linux `fq`, not `fq_codel` or `fq_pie`. In the ImmortalWrt
+`openwrt-25.12` kernel module definitions, `sch_fq` is provided by
+`kmod-sched`. If `tc qdisc ... fq` fails with `Specified qdisc not found`,
+check that the final build config contains:
+
+```text
+CONFIG_PACKAGE_kmod-sched=y
+CONFIG_PACKAGE_kmod-tcp-bbr=y
+CONFIG_PACKAGE_tc-full=y
+```
+
+Runtime checks:
+
+```sh
+lsmod | grep sch_fq
+sysctl net.ipv4.tcp_congestion_control net.core.default_qdisc
+tc qdisc replace dev eth0 root fq
+tc -s qdisc show dev eth0
+```
 
 ## BBR Version Display And Consistency
 
