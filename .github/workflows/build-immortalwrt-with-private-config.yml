@@ -9,10 +9,8 @@ on:
         default: "openwrt-25.12"
         type: choice
         options:
-          - openwrt-25.12
-          - v25.12.0-rc2
           - master
-          - custom
+          - v25.12.0-rc2
 
       custom_ref:
         description: "自定义 ImmortalWrt 分支或标签；只有选择 custom 时才需要填写"
