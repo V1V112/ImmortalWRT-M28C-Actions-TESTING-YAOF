@@ -15,7 +15,7 @@ need_file "$TARGET_MK"
 
 ARCH_CFLAGS="${M28C_CFLAGS_ARCH:--march=armv8-a}"
 
-log "Applying YAOF-style compile optimizations"
+log "Applying compile optimizations"
 log "Replacing default -Os optimization with -O2 in include/target.mk"
 sed -i -E 's/(^|[[:space:]])-Os([[:space:]]|$)/\1-O2\2/g' "$TARGET_MK"
 

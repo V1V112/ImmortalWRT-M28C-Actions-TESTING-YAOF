@@ -175,7 +175,7 @@ immortalwrt-<run_number>-m28c-<ref>
 | `extra_config` | 临时追加原始 Kconfig 配置行 |
 | `upload_packages` | 是否额外上传 `bin/packages` |
 | `verbose_fallback` | 编译失败后是否用 `make -j1 V=s` 重新输出详细日志 |
-| `enable_bbrv3` | 是否启用 YAOF BBRv3；禁用时使用 ImmortalWrt 默认 BBR v1 |
+| `enable_bbrv3` | 是否启用本仓库内置 BBRv3 补丁；禁用时使用 ImmortalWrt 默认 BBR v1 |
 
 ## 仓库结构
 
@@ -401,7 +401,7 @@ cd "$PROJECT_DIR"
 
 scripts/prepare-packages.sh "$OPENWRT_DIR"
 scripts/apply-compile-optimizations.sh "$OPENWRT_DIR"
-scripts/stage-yaof-bbrv3.sh "$OPENWRT_DIR"   # 可选；对应 workflow 的 enable_bbrv3=true
+scripts/stage-bbrv3-patches.sh "$OPENWRT_DIR" # 可选；对应 workflow 的 enable_bbrv3=true
 scripts/stage-kernel-patches.sh "$OPENWRT_DIR"
 scripts/prepare-overlay.sh "$OPENWRT_DIR"    # 如未设置 CUSTOM_CONFIG_REPO_URL，则等价于本地 overlay
 scripts/generate-config.sh "$OPENWRT_DIR" "profiles/m28c"

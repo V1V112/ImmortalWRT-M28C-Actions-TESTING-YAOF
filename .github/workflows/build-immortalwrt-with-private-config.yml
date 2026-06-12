@@ -72,7 +72,7 @@ on:
         type: boolean
 
       enable_bbrv3:
-        description: "启用 YAOF BBRv3；禁用则使用 ImmortalWrt 默认的 BBR v1"
+        description: "启用内置 BBRv3 补丁；禁用则使用 ImmortalWrt 默认的 BBR v1"
         required: true
         default: true
         type: boolean

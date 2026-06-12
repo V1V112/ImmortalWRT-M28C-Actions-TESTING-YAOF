@@ -72,7 +72,7 @@ on:
         type: boolean
 
       enable_bbrv3:
-        description: "启用 YAOF BBRv3；禁用则使用 ImmortalWrt 默认的 BBR v1"
+        description: "启用内置 BBRv3 补丁；禁用则使用 ImmortalWrt 默认的 BBR v1"
         required: true
         default: true
         type: boolean
@@ -236,9 +236,9 @@ jobs:
       - name: 应用内核补丁
         run: |
           if [ "${{ inputs.enable_bbrv3 }}" = "true" ]; then
-            scripts/stage-yaof-bbrv3.sh "$OPENWRT_DIR"
+            scripts/stage-bbrv3-patches.sh "$OPENWRT_DIR"
           else
-            echo "已禁用 YAOF BBRv3，将使用 ImmortalWrt 默认 BBR v1。"
+            echo "已禁用内置 BBRv3 补丁，将使用 ImmortalWrt 默认 BBR v1。"
           fi
           scripts/stage-kernel-patches.sh "$OPENWRT_DIR"
 
@@ -250,7 +250,7 @@ jobs:
           else
             export BBR_VERSION_SOURCE_MODE="auto"
             export BBR_VERSION_FALLBACK="1"
-            export BBR_VERSION_FALLBACK_SOURCE="ImmortalWrt 默认 tcp_bbr.c（BBR v1；已禁用 YAOF BBRv3）"
+            export BBR_VERSION_FALLBACK_SOURCE="ImmortalWrt 默认 tcp_bbr.c（BBR v1；已禁用内置 BBRv3 补丁）"
           fi
           export BBR_VERSION_RECORD_FILE="$OPENWRT_DIR/.bbr-version.before"
           scripts/show-bbr-version.sh "$OPENWRT_DIR"
