@@ -63,6 +63,8 @@ pciutils
 kmod-hwmon-pwmfan
 kmod-aic8800-sdio
 wpad-openssl
+luci-app-cpufreq
+luci-i18n-cpufreq-zh-cn
 
 # USB 基础支持
 kmod-usb-core

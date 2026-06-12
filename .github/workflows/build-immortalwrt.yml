@@ -273,7 +273,7 @@ jobs:
           scripts/generate-config.sh "$OPENWRT_DIR" "profiles/${{ inputs.profile }}"
           cd "$OPENWRT_DIR"
           make defconfig
-          grep -E 'CONFIG_TARGET_rockchip|CONFIG_TARGET_PROFILE|CONFIG_TARGET_ROOTFS|CONFIG_TARGET_IMAGES_GZIP|CONFIG_KERNEL_(DEBUG_INFO|DEBUG_INFO_BTF|BPF_EVENTS|CGROUPS|CGROUP_BPF|XDP_SOCKETS)|CONFIG_PACKAGE_(momo|luci-app-momo|luci-theme-argon|luci-app-argon-config|ttyd|luci-app-ttyd|qmodem|luci-app-qmodem-next|at-webserver|luci-app-at-webserver|bpftool|kmod-tcp-bbr|kmod-sched|kmod-nft-tproxy|kmod-usb-serial-option|kmod-hwmon-pwmfan)' .config || true
+          grep -E 'CONFIG_TARGET_rockchip|CONFIG_TARGET_PROFILE|CONFIG_TARGET_ROOTFS|CONFIG_TARGET_IMAGES_GZIP|CONFIG_KERNEL_(DEBUG_INFO|DEBUG_INFO_BTF|BPF_EVENTS|CGROUPS|CGROUP_BPF|XDP_SOCKETS)|CONFIG_PACKAGE_(momo|luci-app-momo|luci-theme-argon|luci-app-argon-config|ttyd|luci-app-ttyd|qmodem|luci-app-qmodem-next|at-webserver|luci-app-at-webserver|bpftool|kmod-tcp-bbr|kmod-sched|kmod-nft-tproxy|kmod-usb-serial-option|kmod-hwmon-pwmfan|luci-app-cpufreq|luci-i18n-cpufreq-zh-cn)' .config || true
 
       - name: 下载编译所需源码包
         run: |
