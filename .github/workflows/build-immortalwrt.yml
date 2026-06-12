@@ -273,7 +273,17 @@ jobs:
           scripts/generate-config.sh "$OPENWRT_DIR" "profiles/${{ inputs.profile }}"
           cd "$OPENWRT_DIR"
           make defconfig
-          grep -E 'CONFIG_TARGET_rockchip|CONFIG_TARGET_PROFILE|CONFIG_TARGET_ROOTFS|CONFIG_TARGET_IMAGES_GZIP|CONFIG_KERNEL_(DEBUG_INFO|DEBUG_INFO_BTF|BPF_EVENTS|CGROUPS|CGROUP_BPF|XDP_SOCKETS)|CONFIG_PACKAGE_(momo|luci-app-momo|luci-theme-argon|luci-app-argon-config|ttyd|luci-app-ttyd|qmodem|luci-app-qmodem-next|at-webserver|luci-app-at-webserver|bpftool|kmod-tcp-bbr|kmod-sched|kmod-nft-tproxy|kmod-usb-serial-option|kmod-hwmon-pwmfan|luci-app-cpufreq|luci-i18n-cpufreq-zh-cn)' .config || true
+          grep -E 'CONFIG_TARGET_rockchip|CONFIG_TARGET_PROFILE|CONFIG_TARGET_ROOTFS|CONFIG_TARGET_IMAGES_GZIP|CONFIG_LUCI_LANG_zh_Hans|CONFIG_KERNEL_(DEBUG_INFO|DEBUG_INFO_BTF|BPF_EVENTS|CGROUPS|CGROUP_BPF|XDP_SOCKETS)|CONFIG_PACKAGE_(luci|luci-base|luci-i18n-base-zh-cn|momo|luci-app-momo|luci-theme-argon|luci-app-argon-config|ttyd|luci-app-ttyd|qmodem|luci-app-qmodem-next|at-webserver|luci-app-at-webserver|bpftool|kmod-tcp-bbr|kmod-sched|kmod-nft-tproxy|kmod-usb-serial-option|kmod-hwmon-pwmfan|luci-app-cpufreq|luci-i18n-cpufreq-zh-cn)' .config || true
+          if ! grep -qx 'CONFIG_LUCI_LANG_zh_Hans=y' .config; then
+            echo "ERROR: CONFIG_LUCI_LANG_zh_Hans is not enabled after make defconfig."
+            echo "On master, LuCI translation packages are hidden and selected through this language option."
+            exit 1
+          fi
+          if ! grep -qx 'CONFIG_PACKAGE_luci-i18n-base-zh-cn=y' .config; then
+            echo "ERROR: luci-i18n-base-zh-cn is not selected after enabling CONFIG_LUCI_LANG_zh_Hans."
+            echo "Check whether the LuCI feed was installed correctly or whether master changed the base translation package."
+            exit 1
+          fi
 
       - name: 下载编译所需源码包
         run: |

@@ -9,6 +9,7 @@ luci
 luci-base
 luci-ssl
 luci-compat
+CONFIG_LUCI_LANG_zh_Hans=y
 luci-i18n-base-zh-cn
 
 # 主题
