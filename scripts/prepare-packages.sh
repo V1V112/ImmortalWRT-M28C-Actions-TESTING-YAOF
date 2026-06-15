@@ -90,6 +90,27 @@ clone_package_source() {
   rsync -a --delete --exclude='.git' "$src"/ "$dest"/
 }
 
+customize_qmodem_menu() {
+  local menu_file="$OPENWRT_DIR/package/custom/qmodem/luci/luci-app-qmodem-next/root/usr/share/luci/menu.d/luci-app-qmodem-next.json"
+
+  [ -f "$menu_file" ] || return 0
+
+  log "Moving QModem LuCI menu entry under Network"
+  perl -0pi -e '
+    s/\n\t"admin\/modem": \{.*?\n\t\},//s;
+    s/"admin\/modem\/qmodem/"admin\/network\/qmodem/g;
+    s/"title": "QModem"/"title": "调制解调器"/;
+  ' "$menu_file"
+
+  grep -q '"admin/network/qmodem"' "$menu_file" \
+    || die "Failed to move QModem menu under Network"
+  grep -q '"title": "调制解调器"' "$menu_file" \
+    || die "Failed to rename QModem menu title"
+  if grep -q '"admin/modem' "$menu_file"; then
+    die "QModem menu still contains admin/modem entries"
+  fi
+}
+
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
@@ -106,6 +127,8 @@ if [ -f "$PACKAGE_SOURCES" ]; then
     clone_package_source "$name" "$repo" "$ref" "$dest" "$subdir"
   done < "$PACKAGE_SOURCES"
 fi
+
+customize_qmodem_menu
 
 log "Copying local package sources"
 shopt -s nullglob dotglob
