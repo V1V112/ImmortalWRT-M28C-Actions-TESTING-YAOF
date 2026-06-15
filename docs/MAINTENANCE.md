@@ -1,4 +1,4 @@
-# Maintenance Notes
+# 维护说明
 
 ## 目录职责
 
@@ -30,8 +30,8 @@
 
 ## 编译失败排查顺序
 
-1. 看 `Generate .config` 步骤，确认关键包是否被选中。
-2. 如果提示 unknown package，检查包名是否真的存在，或第三方 feed 是否拉取成功。
+1. 看“生成 .config 配置”步骤，确认关键包是否被选中。
+2. 如果提示 `unknown package`，检查包名是否真的存在，或第三方 feed 是否拉取成功。
 3. 如果 MosDNS 和上游自带包冲突，检查 `prepare-packages.sh` 是否已删除 `package/feeds/packages/mosdns`。
 4. 如果 Go 包编译失败，优先确认 ImmortalWrt 当前分支的 `feeds/packages/lang/golang` 版本是否满足第三方包要求。
 5. 如果 `/usr/bin` 压缩包识别错了，改成直接放目标二进制文件，或者把压缩包内不需要的其它平台文件删掉。

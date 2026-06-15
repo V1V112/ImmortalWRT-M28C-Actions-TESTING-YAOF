@@ -9,7 +9,7 @@ source "$SCRIPT_DIR/common.sh"
 source "$SCRIPT_DIR/overlay-bin-common.sh"
 
 OPENWRT_DIR="${1:-${OPENWRT_DIR:-}}"
-[ -n "$OPENWRT_DIR" ] || die "Usage: $0 <openwrt-dir>"
+[ -n "$OPENWRT_DIR" ] || die "用法: $0 <openwrt-dir>"
 need_dir "$OPENWRT_DIR"
 
 PROJECT_DIR="${PROJECT_DIR:-$(project_dir)}"
@@ -52,14 +52,14 @@ stage_usr_bin() {
     elif [ -f "$item" ]; then
       cp "$item" "$USR_BIN_DST/$base"
       chmod 0755 "$USR_BIN_DST/$base"
-      log "Installed direct /usr/bin/$base"
+      log "已直接安装 /usr/bin/$base"
     else
-      warn "Ignoring unsupported /usr/bin overlay item: $item"
+      warn "忽略不支持的 /usr/bin overlay 条目: $item"
     fi
   done
 }
 
-log "Staging rootfs overlay into ImmortalWrt files/"
+log "正在把 rootfs overlay 放入 ImmortalWrt files/"
 stage_root_overlay
 stage_usr_bin
-log "Overlay staging complete"
+log "overlay 放置完成"

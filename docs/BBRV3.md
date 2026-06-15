@@ -1,55 +1,45 @@
-# Local BBRv3 Integration
+# 本地 BBRv3 集成
 
-This project carries its own BBRv3 kernel patch sets and selects the matching
-set automatically during the GitHub Actions build.
+本项目内置 BBRv3 内核补丁集，并会在 GitHub Actions 构建时自动选择与当前内核版本匹配的补丁。
 
-## Default Behavior
+## 默认行为
 
-BBRv3 is enabled by default in both workflows through this boolean input:
+两个 workflow 都通过以下布尔输入默认启用 BBRv3：
 
 ```text
 enable_bbrv3=true
 ```
 
-When enabled, `scripts/stage-bbrv3-patches.sh` detects the Rockchip
-`KERNEL_PATCHVER` from `target/linux/rockchip/Makefile`, then stages matching
-patches from `patches/kernel/bbrv3/kernel-<kernel-version>/bbr3/*.patch` into
-`target/linux/generic/backport-<kernel-version>/`.
+启用后，`scripts/stage-bbrv3-patches.sh` 会从 `target/linux/rockchip/Makefile` 检测 Rockchip 目标使用的 `KERNEL_PATCHVER`，再把 `patches/kernel/bbrv3/kernel-<kernel-version>/bbr3/*.patch` 中匹配的补丁放入 `target/linux/generic/backport-<kernel-version>/`。
 
-Current local patch sets:
+当前本地补丁集：
 
 ```text
 patches/kernel/bbrv3/kernel-6.12/bbr3/
 patches/kernel/bbrv3/kernel-6.18/bbr3/
 ```
 
-If ImmortalWrt moves to a kernel version that is not present here, the script
-fails early and prints the available local kernel versions.
+如果 ImmortalWrt 切换到了本仓库尚未提供补丁的内核版本，脚本会提前失败，并打印当前可用的本地内核版本。
 
-## Disable BBRv3
+## 禁用 BBRv3
 
-Set this workflow input to false:
+将 workflow 输入设置为 false：
 
 ```text
 enable_bbrv3=false
 ```
 
-When disabled:
+禁用后：
 
-1. Local BBRv3 patches are not staged.
-2. The build uses ImmortalWrt's default `tcp_bbr.c`, treated as BBR v1.
-3. `kmod-tcp-bbr` is still built from `profiles/m28c/packages.txt`.
-4. `kmod-sched` is still built from `profiles/m28c/packages.txt`; this package
-   provides `sch_fq.ko`, which is required by `net.core.default_qdisc=fq`.
-5. `files/etc/sysctl.d/99-bbrv3.conf` still selects `fq` and `bbr`, so the
-   active algorithm is the default BBR implementation from the built kernel.
+1. 不会放置本地 BBRv3 补丁。
+2. 构建会使用 ImmortalWrt 默认的 `tcp_bbr.c`，按 BBR v1 处理。
+3. `kmod-tcp-bbr` 仍会通过 `profiles/m28c/packages.txt` 编入固件。
+4. `kmod-sched` 仍会通过 `profiles/m28c/packages.txt` 编入固件；该软件包提供 `sch_fq.ko`，也就是 `net.core.default_qdisc=fq` 所需的模块。
+5. `files/etc/sysctl.d/99-bbrv3.conf` 仍会选择 `fq` 和 `bbr`，因此实际启用的是当前内核自带的默认 BBR 实现。
 
-## fq qdisc Support
+## fq qdisc 支持
 
-For BBR, use Linux `fq`, not `fq_codel` or `fq_pie`. In the ImmortalWrt
-`openwrt-25.12` kernel module definitions, `sch_fq` is provided by
-`kmod-sched`. If `tc qdisc ... fq` fails with `Specified qdisc not found`,
-check that the final build config contains:
+BBR 推荐使用 Linux `fq`，不是 `fq_codel` 或 `fq_pie`。在 ImmortalWrt `openwrt-25.12` 的内核模块定义中，`sch_fq` 由 `kmod-sched` 提供。如果 `tc qdisc ... fq` 报错 `Specified qdisc not found`，请检查最终构建配置是否包含：
 
 ```text
 CONFIG_PACKAGE_kmod-sched=y
@@ -57,7 +47,7 @@ CONFIG_PACKAGE_kmod-tcp-bbr=y
 CONFIG_PACKAGE_tc-full=y
 ```
 
-Runtime checks:
+运行时检查：
 
 ```sh
 lsmod | grep sch_fq
@@ -66,27 +56,22 @@ tc qdisc replace dev eth0 root fq
 tc -s qdisc show dev eth0
 ```
 
-## BBR Version Display And Consistency
+## BBR 版本显示与一致性
 
-Both workflows show BBR twice:
+两个 workflow 会显示两次 BBR 版本：
 
-1. After kernel patches are staged.
-2. After firmware compilation finishes.
+1. 内核补丁放置完成后。
+2. 固件编译完成后。
 
-With BBRv3 enabled, the first step reads `BBR_VERSION` from the staged local
-patch set, and the second step reads it from
-`build_dir/.../net/ipv4/tcp_bbr.c`.
+启用 BBRv3 时，第一次检测会从已放置的本地补丁集中读取 `BBR_VERSION`，第二次检测会从 `build_dir/.../net/ipv4/tcp_bbr.c` 中读取。
 
-With BBRv3 disabled, the workflows record and compare `BBR_VERSION=1`, because
-the default upstream BBR implementation does not carry a `BBR_VERSION` macro.
+禁用 BBRv3 时，workflow 会记录并比较 `BBR_VERSION=1`，因为上游默认 BBR 实现没有 `BBR_VERSION` 宏。
 
-The second step compares the before/after values. If they differ, the workflow
-fails. Both steps print a visible log block, emit a GitHub Actions notice, and
-write the detected version and source path to the workflow Step Summary.
+第二次检测会比较前后版本。如果版本不一致，workflow 会失败。两次检测都会打印醒目的日志块，发送 GitHub Actions notice，并把检测到的版本和来源路径写入 workflow Step Summary。
 
-## Maintenance Knobs
+## 维护开关
 
-Override these environment variables in the workflow when needed:
+必要时可在 workflow 中覆盖以下环境变量：
 
 ```bash
 BBRV3_PATCH_ROOT=/path/to/patches/kernel/bbrv3

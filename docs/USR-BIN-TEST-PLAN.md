@@ -327,7 +327,7 @@ mkdir -p "$OPENWRT_DIR/files"
 cd <project-root>
 scripts/fetch-custom-config.sh "$OPENWRT_DIR" ~/test-openwrt-configs main 2>&1
 
-# 应该显示错误：No executable binary/script found
+# 应该显示错误：未找到可执行二进制或脚本
 ```
 
 **预期结果**：

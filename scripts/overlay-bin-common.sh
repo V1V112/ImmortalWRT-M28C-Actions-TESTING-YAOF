@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
-# Shared helpers for staging executable files from overlay usr/bin directories.
-# Callers should source scripts/common.sh first and set USR_BIN_DST before
-# calling install_detected_binary. OVERLAY_BIN_NAME_MODE controls the output
-# filename for detected binaries:
-#   candidate  keep the chosen candidate basename, except generic names
-#   preferred  always use the directory/archive-derived preferred name
+# 用于从 overlay usr/bin 目录放置可执行文件的共享辅助函数。
+# 调用方应先 source scripts/common.sh，并在调用 install_detected_binary 前设置
+# USR_BIN_DST。OVERLAY_BIN_NAME_MODE 控制检测到的二进制文件输出名称：
+#   candidate  保留选中的候选文件名，通用文件名除外
+#   preferred  始终使用目录或压缩包推导出的首选名称
 
 strip_archive_ext() {
   local name="$1"
@@ -60,7 +59,7 @@ extract_archive() {
       base="$(basename "${archive%.zst}")"
       zstd -dc "$archive" > "$dest/$base"
       ;;
-    *) die "Unsupported archive: $archive" ;;
+    *) die "不支持的压缩包: $archive" ;;
   esac
 }
 
@@ -115,7 +114,7 @@ install_detected_binary() {
   local best_score=-999
   local file_path score dest_name
 
-  [ -n "${USR_BIN_DST:-}" ] || die "USR_BIN_DST is not set"
+  [ -n "${USR_BIN_DST:-}" ] || die "未设置 USR_BIN_DST"
 
   while IFS= read -r -d '' file_path; do
     score="$(candidate_score "$file_path" "$preferred")"
@@ -125,7 +124,7 @@ install_detected_binary() {
     fi
   done < <(find "$search_dir" -type f -print0)
 
-  [ -n "$best" ] && [ "$best_score" -gt 0 ] || die "No executable binary/script found in $search_dir"
+  [ -n "$best" ] && [ "$best_score" -gt 0 ] || die "在 $search_dir 中未找到可执行二进制或脚本"
 
   case "$name_mode" in
     preferred)
@@ -140,12 +139,12 @@ install_detected_binary() {
       esac
       ;;
     *)
-      die "Unsupported OVERLAY_BIN_NAME_MODE: $name_mode"
+      die "不支持的 OVERLAY_BIN_NAME_MODE: $name_mode"
       ;;
   esac
 
   mkdir -p "$USR_BIN_DST"
   cp "$best" "$USR_BIN_DST/$dest_name"
   chmod 0755 "$USR_BIN_DST/$dest_name"
-  log "Installed /usr/bin/$dest_name from ${best#$search_dir/}"
+  log "已从 ${best#$search_dir/} 安装 /usr/bin/$dest_name"
 }

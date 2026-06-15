@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 OPENWRT_DIR="${1:-${OPENWRT_DIR:-}}"
-[ -n "$OPENWRT_DIR" ] || die "Usage: $0 <openwrt-dir>"
+[ -n "$OPENWRT_DIR" ] || die "用法: $0 <openwrt-dir>"
 need_dir "$OPENWRT_DIR"
 
 PROJECT_DIR="${PROJECT_DIR:-$(project_dir)}"
@@ -35,7 +35,7 @@ if [ -n "${EXTRA_FEEDS:-}" ]; then
   printf '%s\n' "$EXTRA_FEEDS" >> "$incoming"
 fi
 
-log "Merging third-party feeds into feeds.conf.default"
+log "正在合并第三方 feeds 到 feeds.conf.default"
 
 cat "$FEEDS_CONF" "$incoming" | awk '
 function trim(s) {
@@ -55,7 +55,7 @@ function repo_url(line, parts, url) {
 
   split(line, parts, /[[:space:]]+/)
   if (parts[1] !~ /^src-/ || parts[2] == "" || parts[3] == "") {
-    print "Skipping invalid feed line: " line > "/dev/stderr"
+    print "跳过无效 feed 行: " line > "/dev/stderr"
     next
   }
 
@@ -63,7 +63,7 @@ function repo_url(line, parts, url) {
   url = repo_url(line)
 
   if (seen_name[name] || seen_url[url]) {
-    print "Skipping duplicate feed: " line > "/dev/stderr"
+    print "跳过重复 feed: " line > "/dev/stderr"
     next
   }
 
@@ -75,5 +75,5 @@ function repo_url(line, parts, url) {
 
 cp "$tmp_dir/feeds.conf.default" "$FEEDS_CONF"
 
-log "Final feeds:"
+log "最终 feeds:"
 sed 's/^/  /' "$FEEDS_CONF"

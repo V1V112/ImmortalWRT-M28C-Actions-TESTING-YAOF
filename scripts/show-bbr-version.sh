@@ -7,20 +7,20 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 OPENWRT_DIR="${1:-${OPENWRT_DIR:-}}"
-[ -n "$OPENWRT_DIR" ] || die "Usage: $0 <openwrt-dir>"
+[ -n "$OPENWRT_DIR" ] || die "用法: $0 <openwrt-dir>"
 need_dir "$OPENWRT_DIR"
 
-BBR_VERSION_PHASE="${BBR_VERSION_PHASE:-BBR Version}"
+BBR_VERSION_PHASE="${BBR_VERSION_PHASE:-BBR 版本}"
 BBR_VERSION_SOURCE_MODE="${BBR_VERSION_SOURCE_MODE:-auto}"
 BBR_VERSION_RECORD_FILE="${BBR_VERSION_RECORD_FILE:-}"
 BBR_VERSION_EXPECT_FILE="${BBR_VERSION_EXPECT_FILE:-}"
 BBR_VERSION_FALLBACK="${BBR_VERSION_FALLBACK:-}"
-BBR_VERSION_FALLBACK_SOURCE="${BBR_VERSION_FALLBACK_SOURCE:-fallback value}"
+BBR_VERSION_FALLBACK_SOURCE="${BBR_VERSION_FALLBACK_SOURCE:-回退值}"
 
 kernel_patchver="$(
   awk -F ':=' '/^KERNEL_PATCHVER:=/ { gsub(/[[:space:]]/, "", $2); print $2; exit }' "$OPENWRT_DIR/target/linux/rockchip/Makefile"
 )"
-[ -n "$kernel_patchver" ] || die "Unable to detect rockchip KERNEL_PATCHVER"
+[ -n "$kernel_patchver" ] || die "无法检测 rockchip KERNEL_PATCHVER"
 
 patch_dirs=(
   "$OPENWRT_DIR/target/linux/generic/backport-$kernel_patchver"
@@ -73,7 +73,7 @@ case "$BBR_VERSION_SOURCE_MODE" in
     done
     ;;
   source) ;;
-  *) die "Unsupported BBR_VERSION_SOURCE_MODE: $BBR_VERSION_SOURCE_MODE" ;;
+  *) die "不支持的 BBR_VERSION_SOURCE_MODE: $BBR_VERSION_SOURCE_MODE" ;;
 esac
 
 if [ -z "$result" ] && [ "$BBR_VERSION_SOURCE_MODE" != "patch" ]; then
@@ -88,15 +88,15 @@ elif [ -n "$BBR_VERSION_FALLBACK" ]; then
   detected_source="$BBR_VERSION_FALLBACK_SOURCE"
 else
   detected_version="unknown"
-  detected_source="not found in staged patches or prepared kernel source"
+  detected_source="未在已放置补丁或已准备内核源码中找到"
 fi
 
 cat <<EOF
 ========================================
-Phase: $BBR_VERSION_PHASE
+阶段: $BBR_VERSION_PHASE
 BBR_VERSION: $detected_version
-Source: $detected_source
-Kernel patch version: $kernel_patchver
+来源: $detected_source
+内核补丁版本: $kernel_patchver
 ========================================
 EOF
 
@@ -112,29 +112,29 @@ if [ -n "$BBR_VERSION_EXPECT_FILE" ]; then
   expected_source="${expected_line#*$'\t'}"
 
   if [ "$detected_version" != "$expected_version" ]; then
-    die "BBR_VERSION mismatch: before=$expected_version ($expected_source), after=$detected_version ($detected_source)"
+    die "BBR_VERSION 不一致: 之前=$expected_version ($expected_source), 之后=$detected_version ($detected_source)"
   fi
 
-  log "BBR_VERSION is consistent with previous detection: $detected_version"
+  log "BBR_VERSION 与之前检测结果一致: $detected_version"
 fi
 
 if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
   {
     printf '## %s\n\n' "$BBR_VERSION_PHASE"
-    printf '| Item | Value |\n'
+    printf '| 项目 | 值 |\n'
     printf '| --- | --- |\n'
     printf '| BBR_VERSION | `%s` |\n' "$detected_version"
-    printf '| Source | `%s` |\n' "$detected_source"
-    printf '| Kernel patch version | `%s` |\n' "$kernel_patchver"
+    printf '| 来源 | `%s` |\n' "$detected_source"
+    printf '| 内核补丁版本 | `%s` |\n' "$kernel_patchver"
     if [ -n "${expected_version:-}" ]; then
-      printf '| Previous BBR_VERSION | `%s` |\n' "$expected_version"
-      printf '| Consistency | `%s` |\n' "matched"
+      printf '| 上一次 BBR_VERSION | `%s` |\n' "$expected_version"
+      printf '| 一致性 | `%s` |\n' "匹配"
     fi
   } >> "$GITHUB_STEP_SUMMARY"
 fi
 
 if [ "$detected_version" = "unknown" ]; then
-  warn "BBR_VERSION was not detected; continuing because this step is informational."
+  warn "未检测到 BBR_VERSION；该步骤仅提供信息，继续执行。"
 else
   printf '::notice title=%s::BBR_VERSION=%s (%s)\n' "$BBR_VERSION_PHASE" "$detected_version" "$detected_source"
 fi

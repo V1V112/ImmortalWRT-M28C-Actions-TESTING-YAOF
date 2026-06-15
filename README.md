@@ -1,4 +1,4 @@
-# ImmortalWrt M28C GitHub Actions Builder
+# ImmortalWrt M28C GitHub Actions 固件构建器
 
 这是一个面向 Widora / MangoPi M28C 的 ImmortalWrt 自动编译项目。仓库通过 GitHub Actions 拉取 ImmortalWrt 源码，合并本项目中的目标配置、软件包列表、第三方源码包、本地软件包、内核补丁和 rootfs overlay，然后生成可下载的 M28C 固件。
 

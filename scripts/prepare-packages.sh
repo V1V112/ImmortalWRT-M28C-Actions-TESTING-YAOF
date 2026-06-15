@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 OPENWRT_DIR="${1:-${OPENWRT_DIR:-}}"
-[ -n "$OPENWRT_DIR" ] || die "Usage: $0 <openwrt-dir>"
+[ -n "$OPENWRT_DIR" ] || die "用法: $0 <openwrt-dir>"
 need_dir "$OPENWRT_DIR"
 
 PROJECT_DIR="${PROJECT_DIR:-$(project_dir)}"
@@ -22,7 +22,7 @@ remove_if_exists() {
   local path="$1"
   if [ -e "$path" ] || [ -L "$path" ]; then
     rm -rf "$path"
-    log "Removed conflicting package path: ${path#$OPENWRT_DIR/}"
+    log "已移除冲突软件包路径: ${path#$OPENWRT_DIR/}"
   fi
 }
 
@@ -41,24 +41,24 @@ remove_feed_package_defs() {
   done
 }
 
-log "Removing built-in packages replaced by third-party sources"
+log "正在移除由第三方源码替换的内置软件包"
 if [ -f "$PACKAGES_TO_REMOVE" ]; then
   while read -r package_name rest; do
     case "${package_name:-}" in
       ""|\#*) continue ;;
     esac
     
-    [ -z "${rest:-}" ] || die "Invalid packages-to-remove line: $package_name (expected only package name)"
+    [ -z "${rest:-}" ] || die "packages-to-remove 行无效: $package_name（应只包含软件包名称）"
     
-    # Remove from common feed paths
+    # 从常见 feed 路径移除
     remove_if_exists "$OPENWRT_DIR/feeds/packages/net/$package_name"
     remove_if_exists "$OPENWRT_DIR/package/feeds/packages/$package_name"
     
-    # Remove package definitions from feeds
+    # 从 feeds 中移除软件包定义
     remove_feed_package_defs "$package_name"
   done < "$PACKAGES_TO_REMOVE"
 else
-  warn "No packages-to-remove config found, skipping package removal"
+  warn "未找到 packages-to-remove 配置，跳过软件包移除"
 fi
 
 clone_package_source() {
@@ -71,9 +71,9 @@ clone_package_source() {
   local dest="$OPENWRT_DIR/$dest_rel"
   local src
 
-  log "Cloning package source: $name ($ref)"
+  log "正在克隆软件包源码: $name ($ref)"
   if ! git clone --depth 1 --filter=blob:none --branch "$ref" "$repo" "$clone_dir"; then
-    warn "Filtered clone failed for $name; retrying without blob filter"
+    warn "$name 的过滤克隆失败，将不使用 blob 过滤重试"
     rm -rf "$clone_dir"
     git clone --depth 1 --branch "$ref" "$repo" "$clone_dir"
   fi
@@ -95,7 +95,7 @@ customize_qmodem_menu() {
 
   [ -f "$menu_file" ] || return 0
 
-  log "Moving QModem LuCI menu entry under Network"
+  log "正在把 QModem LuCI 菜单移动到网络分类下"
   perl -0pi -e '
     s/\n\t"admin\/modem": \{.*?\n\t\},//s;
     s/"admin\/modem\/qmodem/"admin\/network\/qmodem/g;
@@ -103,11 +103,11 @@ customize_qmodem_menu() {
   ' "$menu_file"
 
   grep -q '"admin/network/qmodem"' "$menu_file" \
-    || die "Failed to move QModem menu under Network"
+    || die "移动 QModem 菜单到网络分类失败"
   grep -q '"title": "调制解调器"' "$menu_file" \
-    || die "Failed to rename QModem menu title"
+    || die "重命名 QModem 菜单标题失败"
   if grep -q '"admin/modem' "$menu_file"; then
-    die "QModem menu still contains admin/modem entries"
+    die "QModem 菜单仍包含 admin/modem 条目"
   fi
 }
 
@@ -120,9 +120,9 @@ if [ -f "$PACKAGE_SOURCES" ]; then
       ""|\#*) continue ;;
     esac
 
-    [ -z "${rest:-}" ] || die "Too many columns in $PACKAGE_SOURCES line for $name"
+    [ -z "${rest:-}" ] || die "$PACKAGE_SOURCES 中 $name 对应行的列数过多"
     [ -n "${repo:-}" ] && [ -n "${ref:-}" ] && [ -n "${dest:-}" ] && [ -n "${subdir:-}" ] \
-      || die "Invalid package source line for $name"
+      || die "$name 的软件包源码行无效"
 
     clone_package_source "$name" "$repo" "$ref" "$dest" "$subdir"
   done < "$PACKAGE_SOURCES"
@@ -130,7 +130,7 @@ fi
 
 customize_qmodem_menu
 
-log "Copying local package sources"
+log "正在复制本地软件包源码"
 shopt -s nullglob dotglob
 
 copy_local_package() {
@@ -140,7 +140,7 @@ copy_local_package() {
   base="$(basename "$pkg")"
   rm -rf "$LOCAL_DIR/$base"
   rsync -a --delete --exclude='.git' "$pkg"/ "$LOCAL_DIR/$base"/
-  log "Copied local package: package/local/$base"
+  log "已复制本地软件包: package/local/$base"
 }
 
 for pkg in "$PROJECT_DIR"/local-packages/*; do
@@ -163,10 +163,10 @@ for pkg in "$PROJECT_DIR"/local-packages/*; do
       copied_nested=1
     done
 
-    [ "$copied_nested" -eq 1 ] || die "No Makefile found in local package directory: $pkg"
+    [ "$copied_nested" -eq 1 ] || die "本地软件包目录中未找到 Makefile: $pkg"
   else
-    warn "Ignoring non-directory local package item: $pkg"
+    warn "忽略非目录本地软件包条目: $pkg"
   fi
 done
 
-log "Prepared custom package sources under package/custom and package/local"
+log "已在 package/custom 和 package/local 下准备好自定义软件包源码"
