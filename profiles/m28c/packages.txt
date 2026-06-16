@@ -122,9 +122,7 @@ luci-app-at-webserver
 
 # smartdns
 smartdns
-smartdns-ui
 luci-app-smartdns
-luci-i18n-smartdns-zh-cn
 
 # mosdns
 mosdns

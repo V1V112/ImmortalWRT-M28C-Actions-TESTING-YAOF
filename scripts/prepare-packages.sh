@@ -52,7 +52,9 @@ if [ -f "$PACKAGES_TO_REMOVE" ]; then
     
     # 从常见 feed 路径移除
     remove_if_exists "$OPENWRT_DIR/feeds/packages/net/$package_name"
+    remove_if_exists "$OPENWRT_DIR/feeds/luci/applications/$package_name"
     remove_if_exists "$OPENWRT_DIR/package/feeds/packages/$package_name"
+    remove_if_exists "$OPENWRT_DIR/package/feeds/luci/$package_name"
     
     # 从 feeds 中移除软件包定义
     remove_feed_package_defs "$package_name"
@@ -88,6 +90,94 @@ clone_package_source() {
   rm -rf "$dest"
   mkdir -p "$(dirname "$dest")"
   rsync -a --delete --exclude='.git' "$src"/ "$dest"/
+}
+
+customize_smartdns_package() {
+  local makefile="$OPENWRT_DIR/package/custom/smartdns/Makefile"
+
+  [ -f "$makefile" ] || return 0
+
+  if grep -Eq '^[[:space:]]*include[[:space:]]+\.\./\.\./lang/rust/rust-package\.mk' "$makefile"; then
+    log "Adjusting SmartDNS Rust package include path"
+    perl -0pi -e 's@^([ \t]*include[ \t]+)\.\./\.\./lang/rust/rust-package\.mk@$1\$(TOPDIR)/feeds/packages/lang/rust/rust-package.mk@gm' "$makefile"
+  fi
+
+  if grep -Eq '^[[:space:]]*include[[:space:]]+\.\./\.\./lang/rust/rust-package\.mk' "$makefile"; then
+    die "failed to adjust SmartDNS Rust package include path"
+  fi
+}
+
+customize_smartdns_luci_package() {
+  local luci_dir="$OPENWRT_DIR/package/custom/luci-app-smartdns"
+  local makefile="$luci_dir/Makefile"
+  local po_src="$luci_dir/files/luci/i18n/smartdns.zh-cn.po"
+  local smartdns_makefile="$OPENWRT_DIR/package/custom/smartdns/Makefile"
+  local pkg_version="1.0"
+
+  [ -d "$luci_dir" ] || return 0
+
+  need_dir "$luci_dir/files/root"
+  need_file "$po_src"
+
+  if [ -f "$smartdns_makefile" ]; then
+    pkg_version="$(sed -n 's/^PKG_VERSION:=//p' "$smartdns_makefile" | head -n 1)"
+    [ -n "$pkg_version" ] || pkg_version="1.0"
+  fi
+
+  log "Preparing SmartDNS LuCI package from pymumu/smartdns"
+  rm -rf "$luci_dir/root" "$luci_dir/po"
+  mkdir -p "$luci_dir/root"
+  rsync -a --delete "$luci_dir/files/root"/ "$luci_dir/root"/
+
+  cat > "$makefile" <<'EOF_SMARTDNS_LUCI_MAKEFILE'
+#
+# Built from pymumu/smartdns package/luci.
+#
+
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=luci-app-smartdns
+PKG_LICENSE:=GPL-3.0-or-later
+PKG_MAINTAINER:=Nick Peng <pymumu@gmail.com>
+PKG_VERSION:=__SMARTDNS_VERSION__
+PKG_RELEASE:=1
+PKGARCH:=all
+PKG_BUILD_DEPENDS:=lua/host luci-base/host
+
+include $(INCLUDE_DIR)/package.mk
+
+PKG_CONFIG_DEPENDS:=CONFIG_PACKAGE_luci-app-smartdns_INCLUDE_WebUI
+
+define Package/luci-app-smartdns
+  SECTION:=luci
+  CATEGORY:=LuCI
+  SUBMENU:=3. Applications
+  TITLE:=LuCI for smartdns
+  DEPENDS:=+luci-base +smartdns \
+	+PACKAGE_luci-app-smartdns_INCLUDE_WebUI:smartdns-ui
+endef
+
+define Package/luci-app-smartdns/description
+Provides LuCI for smartdns.
+endef
+
+define Package/luci-app-smartdns/config
+  config PACKAGE_luci-app-smartdns_INCLUDE_WebUI
+    bool "Include WebUI support"
+endef
+
+define Build/Compile
+endef
+
+define Package/luci-app-smartdns/install
+	$(CP) ./root/* $(1)/
+	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n
+	po2lmo ./files/luci/i18n/smartdns.zh-cn.po $(1)/usr/lib/lua/luci/i18n/smartdns.zh-cn.lmo
+endef
+
+$(eval $(call BuildPackage,luci-app-smartdns))
+EOF_SMARTDNS_LUCI_MAKEFILE
+  perl -0pi -e "s/__SMARTDNS_VERSION__/$pkg_version/g" "$makefile"
 }
 
 customize_qmodem_menu() {
@@ -128,6 +218,8 @@ if [ -f "$PACKAGE_SOURCES" ]; then
   done < "$PACKAGE_SOURCES"
 fi
 
+customize_smartdns_package
+customize_smartdns_luci_package
 customize_qmodem_menu
 
 log "正在复制本地软件包源码"
