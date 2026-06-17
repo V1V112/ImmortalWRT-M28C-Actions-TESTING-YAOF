@@ -81,7 +81,7 @@ tc -s qdisc show dev eth0
 
 ### DNS 与代理
 
-- 内置 SmartDNS：`smartdns`、`smartdns-ui`、`luci-app-smartdns`、中文语言包。
+- 内置 SmartDNS：`smartdns`（PikuZheng/smartdns 预编译 with_ui 包）、`luci-app-smartdns`。
 - 内置 MosDNS：`mosdns`、`luci-app-mosdns`、中文语言包。
 - 内置 v2ray geodata：`v2ray-geoip`、`v2ray-geosite`、`v2dat`。
 - 内置 momo 透明代理相关包：`momo`、`luci-app-momo`、中文语言包。
