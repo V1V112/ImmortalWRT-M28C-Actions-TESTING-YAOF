@@ -9,17 +9,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=smartdns-prebuilt
-PKG_VERSION:=1.2026.v48.1.5
+PKG_VERSION:=1.2026.48.1.5
 PKG_RELEASE:=1
 
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_MAINTAINER:=PikuZheng
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE)
 
-SMARTDNS_RELEASE_TAG:=1.2026.v48.1.5_with_ui
+SMARTDNS_UPSTREAM_VERSION:=1.2026.v48.1.5
+SMARTDNS_RELEASE_TAG:=$(SMARTDNS_UPSTREAM_VERSION)_with_ui
 SMARTDNS_RELEASE_URL:=https://github.com/PikuZheng/smartdns/releases/download/$(SMARTDNS_RELEASE_TAG)
 
-SMARTDNS_PREBUILT_FILE:=smartdns_with_ui.$(PKG_VERSION).aarch64.ipk
+SMARTDNS_PREBUILT_FILE:=smartdns_with_ui.$(SMARTDNS_UPSTREAM_VERSION).aarch64.ipk
 SMARTDNS_PREBUILT_HASH:=ca88de7d3c7f356ddbdbbcc33c22a911174e558f58fca97f5b1e96e43eb320a2
 
 # PikuZheng's with_ui IPK ships the SmartDNS backend/dashboard as smartdns.
