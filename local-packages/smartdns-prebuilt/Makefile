@@ -53,7 +53,7 @@ define Package/smartdns
   SUBMENU:=IP Addresses and Names
   TITLE:=prebuilt smartdns server
   URL:=https://github.com/PikuZheng/smartdns
-  DEPENDS:=@(aarch64) +libc +libopenssl +libpthread
+  DEPENDS:=@(aarch64) +libc +libopenssl +libpthread +zlib
 endef
 
 define Package/smartdns/description
