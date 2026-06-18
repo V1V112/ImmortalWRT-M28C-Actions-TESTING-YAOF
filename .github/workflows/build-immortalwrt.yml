@@ -223,6 +223,7 @@ jobs:
       - name: 准备 feeds 和自定义软件包
         env:
           EXTRA_FEEDS: ${{ inputs.extra_feeds }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           chmod +x scripts/*.sh
           scripts/add-feeds.sh "$OPENWRT_DIR"

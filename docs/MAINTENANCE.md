@@ -2,7 +2,7 @@
 
 ## 目录职责
 
-`.github/workflows/build-immortalwrt.yml` 只负责 CI 流程。能放到配置文件和脚本里的东西都不要直接写死在 workflow 里。
+`.github/workflows/build-immortalwrt.yml` 只负责 CI 流程。能放到配置文件和脚本里的东西都不要直接写死在工作流里。
 
 `profiles/m28c/target.config` 只放目标、内核和全局 Kconfig。
 
@@ -26,7 +26,7 @@
 
 追加二进制工具：直接放可执行文件、目录或压缩包到 `files/usr/bin/`。目录和压缩包会优先选择 Linux aarch64/arm64 ELF，其次选择脚本。
 
-使用私人配置仓库：运行 workflow 时填写 `custom_config_repo` 和 `custom_config_branch`。如果缺少私人配置就不应继续构建，把 `custom_config_required` 设为 `true`。
+使用私人配置仓库：运行工作流时填写 `custom_config_repo` 和 `custom_config_branch`。如果缺少私人配置就不应继续构建，把 `custom_config_required` 设为 `true`。
 
 ## 编译失败排查顺序
 

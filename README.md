@@ -82,6 +82,7 @@ tc -s qdisc show dev eth0
 ### DNS 与代理
 
 - 内置 SmartDNS：`smartdns`（PikuZheng/smartdns 预编译 with_ui 包）、`luci-app-smartdns`。
+- CI 构建时会自动解析 PikuZheng/smartdns 最新 `smartdns_with_ui.*.aarch64.ipk` 并更新本地包版本与 hash；如需固定当前版本，可设置 `SMARTDNS_PREBUILT_AUTO_UPDATE=0`。
 - 内置 MosDNS：`mosdns`、`luci-app-mosdns`、中文语言包。
 - 内置 v2ray geodata：`v2ray-geoip`、`v2ray-geosite`、`v2dat`。
 - 内置 momo 透明代理相关包：`momo`、`luci-app-momo`、中文语言包。
@@ -140,13 +141,13 @@ done
 
 1. 将本仓库推送到自己的 GitHub 仓库。
 2. 打开仓库页面的 `Actions`。
-3. 选择 M28C 固件编译 workflow，并点击 `Run workflow`。
+3. 选择 M28C 固件编译工作流，并点击 `Run workflow`（运行工作流）。
 4. 选择 ImmortalWrt 版本：
    - `openwrt-25.12`：默认分支
    - `v25.12.0-rc2`：指定版本标签
    - `master`：上游主分支
    - `custom`：自定义分支、标签或 commit，需要填写 `custom_ref`
-5. 等待编译完成后，在本次 workflow 的 `Artifacts` 中下载固件。
+5. 等待编译完成后，在本次工作流的 `Artifacts`（构建产物）中下载固件。
 
 产物名称类似：
 
@@ -158,9 +159,9 @@ immortalwrt-<run_number>-m28c-<ref>
 
 - `targets/`：固件镜像、manifest、buildinfo、sha256sums 等文件。
 - `config.build`：本次编译使用的最终 `.config`。
-- `packages/`：仅当运行 workflow 时启用 `upload_packages` 才会上传。
+- `packages/`：仅当运行工作流时启用 `upload_packages` 才会上传。
 
-## Workflow 参数
+## 工作流参数
 
 | 参数 | 说明 |
 | --- | --- |
@@ -201,7 +202,7 @@ immortalwrt-<run_number>-m28c-<ref>
 |-- profiles/m28c/                 # M28C 构建 profile
 |   |-- packages.txt               # 默认内置软件包列表
 |   `-- target.config              # 目标平台和固件格式配置
-|-- scripts/                       # workflow 调用的辅助脚本
+|-- scripts/                       # 工作流调用的辅助脚本
 |-- .gitattributes
 |-- .gitignore
 `-- README.md
@@ -211,7 +212,7 @@ immortalwrt-<run_number>-m28c-<ref>
 
 保存 GitHub Actions 编译流程。
 
-- `build-immortalwrt.yml`：主 workflow，也是唯一的实际构建实现。负责解析版本参数、释放磁盘空间、安装依赖、拉取 ImmortalWrt、恢复 `dl` 与 `ccache` 缓存、合并 feeds、准备软件包、应用补丁、注入 overlay、生成 `.config`、下载源码、编译固件并上传 Artifacts。
+- `build-immortalwrt.yml`：主工作流，也是唯一的实际构建实现。负责解析版本参数、释放磁盘空间、安装依赖、拉取 ImmortalWrt、恢复 `dl` 与 `ccache` 缓存、合并 feeds、准备软件包、应用补丁、注入 overlay、生成 `.config`、下载源码、编译固件并上传构建产物。
 - `build-immortalwrt-with-private-config.yml`：兼容入口。它保留“支持私人配置仓库”的手动运行入口，但内部调用 `build-immortalwrt.yml`，避免维护两份构建步骤。
 
 ### `configs/`
@@ -258,7 +259,7 @@ files/www/luci-static/x   ->  /www/luci-static/x
 
 ### `local-packages/`
 
-保存本地 OpenWrt 软件包源码。workflow 会复制到 ImmortalWrt 源码目录的 `package/local/`。
+保存本地 OpenWrt 软件包源码。工作流会复制到 ImmortalWrt 源码目录的 `package/local/`。
 
 当前包含：
 
@@ -294,10 +295,10 @@ local-packages/<collection>/<package-name>/Makefile
 
 ### `scripts/`
 
-保存 workflow 调用的脚本。
+保存工作流调用的脚本。
 
 - `common.sh`：公共函数，如日志、错误退出、路径检测。
-- `add-feeds.sh`：合并 `feeds/*.feeds` 和 workflow 的 `extra_feeds`，并跳过重复 feed。
+- `add-feeds.sh`：合并 `feeds/*.feeds` 和工作流的 `extra_feeds`，并跳过重复 feed。
 - `prepare-packages.sh`：克隆 `package-sources.conf` 中的单包源码，复制 `local-packages/` 中的本地包，并移除上游冲突包。
 - `stage-kernel-patches.sh`：把 `patches/kernel/generic/*.patch` 放入 ImmortalWrt 通用内核补丁目录，并直接应用 `patches/kernel/rockchip/*.patch` 中的 OpenWrt 源码树补丁。
 - `stage-overlay.sh`：把 `files/` 注入 ImmortalWrt 的 rootfs overlay，并特殊处理 `files/usr/bin/`。
@@ -334,7 +335,7 @@ luci-app-example
 configs/custom.config
 ```
 
-也可以在 workflow 的 `extra_config` 中临时追加。
+也可以在工作流的 `extra_config` 中临时追加。
 
 ## 添加第三方源码
 
@@ -401,7 +402,7 @@ cd "$PROJECT_DIR"
 
 scripts/prepare-packages.sh "$OPENWRT_DIR"
 scripts/apply-compile-optimizations.sh "$OPENWRT_DIR"
-scripts/stage-bbrv3-patches.sh "$OPENWRT_DIR" # 可选；对应 workflow 的 enable_bbrv3=true
+scripts/stage-bbrv3-patches.sh "$OPENWRT_DIR" # 可选；对应工作流的 enable_bbrv3=true
 scripts/stage-kernel-patches.sh "$OPENWRT_DIR"
 scripts/prepare-overlay.sh "$OPENWRT_DIR"    # 如未设置 CUSTOM_CONFIG_REPO_URL，则等价于本地 overlay
 scripts/generate-config.sh "$OPENWRT_DIR" "profiles/m28c"

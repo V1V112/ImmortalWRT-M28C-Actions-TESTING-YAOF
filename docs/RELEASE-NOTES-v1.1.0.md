@@ -328,7 +328,7 @@ file openwrt/files/usr/bin/app1
 
 ### 社区反馈
 
-欢迎提交 Issue 或 Pull Request：
+欢迎提交 Issue（问题反馈）或 Pull Request（拉取请求）：
 - 新的压缩格式支持
 - 性能优化建议
 - 文档改进

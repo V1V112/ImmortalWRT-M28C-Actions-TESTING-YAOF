@@ -1,9 +1,9 @@
 #
-# Prebuilt SmartDNS backend from PikuZheng/smartdns.
+# 使用 PikuZheng/smartdns 的预编译 SmartDNS 后端。
 #
-# OpenWrt/ImmortalWrt 25.12 still repackages this into the target package
-# format for the final image. The IPK files are used only as stable tar
-# containers here, because upstream APK v3 packages need apk-tools to extract.
+# OpenWrt/ImmortalWrt 25.12 仍会把这里的内容重新打包成目标固件使用的
+# 软件包格式。这里继续使用 IPK 作为稳定的 tar 容器，因为上游 APK v3
+# 软件包需要 apk-tools 才能解包。
 #
 
 include $(TOPDIR)/rules.mk
@@ -17,15 +17,14 @@ PKG_MAINTAINER:=PikuZheng
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE)
 
 SMARTDNS_UPSTREAM_VERSION:=1.2026.v48.1.5
-SMARTDNS_RELEASE_TAG:=$(SMARTDNS_UPSTREAM_VERSION)_with_ui
+SMARTDNS_RELEASE_TAG:=1.2026.v48.1.5_with_ui
 SMARTDNS_RELEASE_URL:=https://github.com/PikuZheng/smartdns/releases/download/$(SMARTDNS_RELEASE_TAG)
 
 SMARTDNS_PREBUILT_FILE:=smartdns_with_ui.$(SMARTDNS_UPSTREAM_VERSION).aarch64.ipk
 SMARTDNS_PREBUILT_HASH:=ca88de7d3c7f356ddbdbbcc33c22a911174e558f58fca97f5b1e96e43eb320a2
 
-# PikuZheng's with_ui IPK ships the SmartDNS backend/dashboard as smartdns.
-# Keep the LuCI package source separate so the existing profile package name
-# luci-app-smartdns still resolves.
+# PikuZheng 的 with_ui IPK 会把 SmartDNS 后端和内置面板都打进 smartdns 包。
+# LuCI 包源保持独立，确保现有 profile 中的 luci-app-smartdns 包名仍能解析。
 LUCI_SMARTDNS_RELEASE_TAG:=Release48.1
 LUCI_SMARTDNS_RELEASE_URL:=https://github.com/pymumu/smartdns/releases/download/$(LUCI_SMARTDNS_RELEASE_TAG)
 LUCI_SMARTDNS_PREBUILT_VERSION:=1.2026.06.07-1153
@@ -52,13 +51,13 @@ define Package/smartdns
   SECTION:=net
   CATEGORY:=Network
   SUBMENU:=IP Addresses and Names
-  TITLE:=prebuilt smartdns server
+  TITLE:=预编译 SmartDNS 服务端
   URL:=https://github.com/PikuZheng/smartdns
   DEPENDS:=@(aarch64) +libc +libopenssl +libpthread +zlib
 endef
 
 define Package/smartdns/description
-Prebuilt aarch64 OpenWrt SmartDNS package from PikuZheng/smartdns.
+来自 PikuZheng/smartdns 的 aarch64 OpenWrt SmartDNS 预编译包。
 endef
 
 define Package/smartdns/conffiles
@@ -74,13 +73,13 @@ define Package/luci-app-smartdns
   SECTION:=luci
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
-  TITLE:=LuCI for smartdns
+  TITLE:=SmartDNS 的 LuCI 管理界面
   URL:=https://github.com/pymumu/smartdns
   DEPENDS:=+luci-base +smartdns
 endef
 
 define Package/luci-app-smartdns/description
-Prebuilt LuCI app for SmartDNS from pymumu/smartdns.
+来自 pymumu/smartdns 的 SmartDNS 预编译 LuCI 应用。
 endef
 
 define Build/Prepare

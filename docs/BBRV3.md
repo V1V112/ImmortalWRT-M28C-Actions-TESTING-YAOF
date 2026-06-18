@@ -4,7 +4,7 @@
 
 ## 默认行为
 
-两个 workflow 都通过以下布尔输入默认启用 BBRv3：
+两个工作流都通过以下布尔输入默认启用 BBRv3：
 
 ```text
 enable_bbrv3=true
@@ -23,7 +23,7 @@ patches/kernel/bbrv3/kernel-6.18/bbr3/
 
 ## 禁用 BBRv3
 
-将 workflow 输入设置为 false：
+将工作流输入设置为 false：
 
 ```text
 enable_bbrv3=false
@@ -58,20 +58,20 @@ tc -s qdisc show dev eth0
 
 ## BBR 版本显示与一致性
 
-两个 workflow 会显示两次 BBR 版本：
+两个工作流会显示两次 BBR 版本：
 
 1. 内核补丁放置完成后。
 2. 固件编译完成后。
 
 启用 BBRv3 时，第一次检测会从已放置的本地补丁集中读取 `BBR_VERSION`，第二次检测会从 `build_dir/.../net/ipv4/tcp_bbr.c` 中读取。
 
-禁用 BBRv3 时，workflow 会记录并比较 `BBR_VERSION=1`，因为上游默认 BBR 实现没有 `BBR_VERSION` 宏。
+禁用 BBRv3 时，工作流会记录并比较 `BBR_VERSION=1`，因为上游默认 BBR 实现没有 `BBR_VERSION` 宏。
 
-第二次检测会比较前后版本。如果版本不一致，workflow 会失败。两次检测都会打印醒目的日志块，发送 GitHub Actions notice，并把检测到的版本和来源路径写入 workflow Step Summary。
+第二次检测会比较前后版本。如果版本不一致，工作流会失败。两次检测都会打印醒目的日志块，发送 GitHub Actions 通知，并把检测到的版本和来源路径写入工作流步骤摘要。
 
 ## 维护开关
 
-必要时可在 workflow 中覆盖以下环境变量：
+必要时可在工作流中覆盖以下环境变量：
 
 ```bash
 BBRV3_PATCH_ROOT=/path/to/patches/kernel/bbrv3

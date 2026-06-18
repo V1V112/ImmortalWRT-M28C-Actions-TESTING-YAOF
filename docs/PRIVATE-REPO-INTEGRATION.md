@@ -82,7 +82,7 @@ git push origin main
 如果私人仓库是私密的，需要 GitHub Personal Access Token 用于认证：
 
 1. 访问 https://github.com/settings/tokens
-2. 点击 "Generate new token" → "Generate new token (classic)"
+2. 点击 "Generate new token"（生成新令牌）→ "Generate new token (classic)"（生成经典令牌）
 3. 配置：
    - Scopes: 选择 `repo` (完整仓库访问)
    - 有效期：根据需要选择
@@ -92,13 +92,13 @@ git push origin main
 
 在原项目的仓库设置中配置 Secret：
 
-1. 进入项目 → Settings → Secrets and variables → Actions
+1. 进入项目 → Settings（设置）→ Secrets and variables（密钥和变量）→ Actions
 2. 创建以下 Secret（如果使用私人仓库）：
    - `CUSTOM_CONFIG_TOKEN`: 粘贴从步骤 3 获得的 token
 
-### 第五步：运行 workflow 时填写配置源
+### 第五步：运行工作流时填写配置源
 
-当前项目的主 workflow 已内置私人配置仓库支持，不需要再手工修改 YAML。运行 Actions 时填写：
+当前项目的主工作流已内置私人配置仓库支持，不需要再手工修改 YAML。运行 Actions 时填写：
 
 | 参数 | 说明 |
 | --- | --- |
@@ -114,8 +114,8 @@ git push origin main
 
 项目保留两个 Actions 入口：
 
-- `build-immortalwrt.yml`：主构建 workflow，也是唯一实际维护的构建实现。
-- `build-immortalwrt-with-private-config.yml`：兼容入口，内部调用主 workflow，方便继续从“支持私人配置仓库”的入口运行。
+- `build-immortalwrt.yml`：主构建工作流，也是唯一实际维护的构建实现。
+- `build-immortalwrt-with-private-config.yml`：兼容入口，内部调用主工作流，方便继续从“支持私人配置仓库”的入口运行。
 
 ### 支持多种私人仓库
 
@@ -128,7 +128,7 @@ git push origin main
 
 ### 禁用私人仓库配置
 
-如果只想使用本地 `files` 目录，把 workflow 输入 `custom_config_repo` 留空即可。
+如果只想使用本地 `files` 目录，把工作流输入 `custom_config_repo` 留空即可。
 
 ## 配置迁移指南
 
@@ -217,7 +217,7 @@ git push
 # /files/etc/config/network
 # M28C Router Configuration
 # Updated: 2025-05-23
-# Description: Primary LAN configuration
+# 描述：主要 LAN 配置
 
 config interface 'lan'
     # ...

@@ -67,7 +67,7 @@ trap 'rm -f "$tmp"' EXIT
   emit_packages_from_text < "$PACKAGES_FILE"
 
   if [ -n "${EXTRA_PACKAGES:-}" ]; then
-    printf '\n# 来自 workflow extra_packages 的软件包\n'
+    printf '\n# 来自工作流 extra_packages 的软件包\n'
     printf '%s\n' "$EXTRA_PACKAGES" | emit_packages_from_text
   fi
 
@@ -77,7 +77,7 @@ trap 'rm -f "$tmp"' EXIT
   fi
 
   if [ -n "${EXTRA_CONFIG:-}" ]; then
-    printf '\n# 来自 workflow extra_config 的原始配置\n'
+    printf '\n# 来自工作流 extra_config 的原始配置\n'
     printf '%s\n' "$EXTRA_CONFIG"
     printf '\n'
   fi

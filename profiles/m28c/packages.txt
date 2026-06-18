@@ -4,7 +4,7 @@
 # 每行一个软件包；前面加 "-" 表示强制禁用。
 # ============================================================
 
-# LuCI Web 管理界面
+# LuCI 网页管理界面
 luci
 luci-base
 luci-ssl
@@ -116,15 +116,15 @@ momo
 luci-app-momo
 luci-i18n-momo-zh-cn
 
-# MT5700 AT WebServer / WebUI
+# MT5700 AT WebServer / 网页界面
 at-webserver
 luci-app-at-webserver
 
-# smartdns
+# SmartDNS
 smartdns
 luci-app-smartdns
 
-# mosdns
+# MosDNS
 mosdns
 luci-app-mosdns
 luci-i18n-mosdns-zh-cn

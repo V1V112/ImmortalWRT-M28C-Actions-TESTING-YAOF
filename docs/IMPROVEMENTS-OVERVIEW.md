@@ -362,9 +362,9 @@ export CUSTOM_CONFIG_TOKEN="<your-token>"
 
 ### 提供反馈
 
-- 开源项目: GitHub Issues
+- 开源项目：GitHub Issues（问题反馈）
 - 社区论坛: OpenWrt/ImmortalWRT 社区
-- 贡献代码: Pull Request
+- 贡献代码：Pull Request（拉取请求）
 
 ---
 

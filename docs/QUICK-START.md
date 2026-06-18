@@ -15,15 +15,15 @@
 
 1. 访问: https://github.com/settings/tokens/new
 2. 配置:
-   - Token name: `ImmortalWRT Config Access`
+   - 令牌名称（Token name）：`ImmortalWRT Config Access`
    - Expiration: `90 days` (按需调整)
-   - Select scopes: `repo`
+   - 勾选权限（Select scopes）：`repo`
 3. 复制 token，保存在安全的地方
 
 ### 步骤 3: 在此项目中创建 Secret
 
-1. 进入项目 → Settings → Secrets and variables → Actions
-2. 点击 "New repository secret"
+1. 进入项目 → Settings（设置）→ Secrets and variables（密钥和变量）→ Actions
+2. 点击 "New repository secret"（新建仓库密钥）
 3. 名称: `CUSTOM_CONFIG_TOKEN`
 4. 值: 粘贴从步骤 2 获得的 token
 5. 保存
@@ -58,7 +58,7 @@ git push origin main
 
 ### 步骤 5: 运行时填写私人仓库参数
 
-当前 workflow 已内置私人配置仓库支持，不需要手工修改 YAML。运行 Actions 时填写：
+当前工作流已内置私人配置仓库支持，不需要手工修改 YAML。运行 Actions 时填写：
 
 | 参数 | 建议值 |
 | --- | --- |
@@ -71,7 +71,7 @@ git push origin main
 ### 步骤 6: 测试构建
 
 1. 进入项目 → Actions → 编译 ImmortalWrt M28C 固件
-2. 点击 "Run workflow"
+2. 点击 "Run workflow"（运行工作流）
 3. 填写 `custom_config_repo` 等参数
 4. 等待编译完成
 
@@ -159,8 +159,8 @@ curl -H "Authorization: token $TOKEN" \
 ImmortalWRT-M28C-Actions-TESTING/
 ├── .github/
 │   └── workflows/
-│       ├── build-immortalwrt.yml (主构建 workflow)
-│       └── build-immortalwrt-with-private-config.yml (兼容入口，调用主 workflow)
+│       ├── build-immortalwrt.yml (主构建工作流)
+│       └── build-immortalwrt-with-private-config.yml (兼容入口，调用主工作流)
 ├── scripts/
 │   ├── fetch-custom-config.sh
 │   ├── prepare-overlay.sh

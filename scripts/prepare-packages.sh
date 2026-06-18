@@ -132,6 +132,13 @@ fi
 
 customize_qmodem_menu
 
+if [ "${SMARTDNS_PREBUILT_AUTO_UPDATE:-1}" != "0" ]; then
+  log "正在把 smartdns-prebuilt 更新到 PikuZheng/smartdns 最新发布"
+  bash "$SCRIPT_DIR/update-smartdns-prebuilt.sh" "$PROJECT_DIR/local-packages/smartdns-prebuilt/Makefile"
+else
+  log "已跳过 smartdns-prebuilt 自动更新"
+fi
+
 log "正在复制本地软件包源码"
 shopt -s nullglob dotglob
 
