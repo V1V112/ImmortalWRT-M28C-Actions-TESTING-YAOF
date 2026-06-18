@@ -170,11 +170,11 @@ git push
 
 ```bash
 # 标记稳定版本
-git tag -a v1.0-openwrt-25.12 -m "openwrt 25.12 stable configuration"
-git push origin v1.0-openwrt-25.12
+git tag -a v1.0-v25.12.0-rc2 -m "v25.12.0-rc2 stable configuration"
+git push origin v1.0-v25.12.0-rc2
 
 # 在工作流中指定特定版本
-CUSTOM_CONFIG_BRANCH: v1.0-openwrt-25.12
+CUSTOM_CONFIG_BRANCH: v1.0-v25.12.0-rc2
 ```
 
 ### 2. 敏感信息管理

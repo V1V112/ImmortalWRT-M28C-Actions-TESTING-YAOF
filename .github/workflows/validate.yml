@@ -1,0 +1,52 @@
+name: 校验项目脚本
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/**"
+      - "scripts/**"
+      - "tests/**"
+      - "feeds/**"
+      - "profiles/**"
+      - "configs/**"
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - "scripts/**"
+      - "tests/**"
+      - "feeds/**"
+      - "profiles/**"
+      - "configs/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Bash 与 overlay 校验
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: 拉取当前项目仓库
+        uses: actions/checkout@v4
+
+      - name: 安装校验依赖
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck file tar gzip git rsync
+
+      - name: Bash 语法检查
+        run: |
+          find scripts tests -type f -name '*.sh' -print0 \
+            | xargs -0 -n 1 bash -n
+
+      - name: ShellCheck
+        run: |
+          find scripts tests -type f -name '*.sh' -print0 \
+            | xargs -0 shellcheck -x
+
+      - name: /usr/bin overlay 回归测试
+        run: |
+          bash tests/test-usr-bin.sh

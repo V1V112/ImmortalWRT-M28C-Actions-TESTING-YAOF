@@ -6,17 +6,11 @@ on:
       immortalwrt_version:
         description: "选择 ImmortalWrt 版本"
         required: true
-        default: "openwrt-25.12"
+        default: "master"
         type: choice
         options:
           - master
           - v25.12.0-rc2
-
-      custom_ref:
-        description: "自定义 ImmortalWrt 分支或标签；只有选择 custom 时才需要填写"
-        required: false
-        default: ""
-        type: string
 
       profile:
         description: "编译配置方案"
@@ -82,11 +76,7 @@ on:
       immortalwrt_version:
         required: false
         type: string
-        default: "openwrt-25.12"
-      custom_ref:
-        required: false
-        type: string
-        default: ""
+        default: "master"
       profile:
         required: false
         type: string
@@ -154,19 +144,19 @@ jobs:
         id: resolve_ref
         env:
           IMMORTALWRT_VERSION: ${{ inputs.immortalwrt_version }}
-          IMMORTALWRT_CUSTOM_REF: ${{ inputs.custom_ref }}
         run: |
           set -eu
 
-          if [ "$IMMORTALWRT_VERSION" = "custom" ]; then
-            if [ -z "${IMMORTALWRT_CUSTOM_REF:-}" ]; then
-              echo "错误：当版本选择 custom 时，必须填写 custom_ref。"
+          case "$IMMORTALWRT_VERSION" in
+            master|v25.12.0-rc2)
+              ref="$IMMORTALWRT_VERSION"
+              ;;
+            *)
+              echo "错误：不支持的 ImmortalWrt 版本：$IMMORTALWRT_VERSION"
+              echo "当前只支持 master 和 v25.12.0-rc2。"
               exit 1
-            fi
-            ref="$IMMORTALWRT_CUSTOM_REF"
-          else
-            ref="$IMMORTALWRT_VERSION"
-          fi
+              ;;
+          esac
 
           safe_ref="${ref//\//-}"
 

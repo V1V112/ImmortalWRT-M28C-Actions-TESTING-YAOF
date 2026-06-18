@@ -18,7 +18,7 @@
 
 ## 常见修改
 
-切换 ImmortalWrt 版本：运行 Actions 时修改 `immortalwrt_ref`。默认是 `openwrt-25.12`。
+切换 ImmortalWrt 版本：运行 Actions 时修改 `immortalwrt_version`。当前只保留 `master` 和 `v25.12.0-rc2`，默认是 `master`。
 
 固定某个第三方包版本：把 `feeds/package-sources.conf` 或 `feeds/third-party.feeds` 里的分支名改成 tag 或 commit 可取到的 ref。
 

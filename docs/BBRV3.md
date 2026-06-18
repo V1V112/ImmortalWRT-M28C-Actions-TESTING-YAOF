@@ -39,7 +39,7 @@ enable_bbrv3=false
 
 ## fq qdisc 支持
 
-BBR 推荐使用 Linux `fq`，不是 `fq_codel` 或 `fq_pie`。在 ImmortalWrt `openwrt-25.12` 的内核模块定义中，`sch_fq` 由 `kmod-sched` 提供。如果 `tc qdisc ... fq` 报错 `Specified qdisc not found`，请检查最终构建配置是否包含：
+BBR 推荐使用 Linux `fq`，不是 `fq_codel` 或 `fq_pie`。在 ImmortalWrt `v25.12.0-rc2` 的内核模块定义中，`sch_fq` 由 `kmod-sched` 提供。如果 `tc qdisc ... fq` 报错 `Specified qdisc not found`，请检查最终构建配置是否包含：
 
 ```text
 CONFIG_PACKAGE_kmod-sched=y

@@ -4,7 +4,7 @@
 
 ## 构建目标
 
-- ImmortalWrt 分支：默认 `openwrt-25.12`
+- ImmortalWrt 版本：默认 `master`，也可选择 `v25.12.0-rc2`
 - 设备平台：`rockchip/armv8`
 - 设备型号：`widora_mangopi-m28c`
 - 固件格式：`squashfs`
@@ -143,10 +143,8 @@ done
 2. 打开仓库页面的 `Actions`。
 3. 选择 M28C 固件编译工作流，并点击 `Run workflow`（运行工作流）。
 4. 选择 ImmortalWrt 版本：
-   - `openwrt-25.12`：默认分支
+   - `master`：默认上游主分支
    - `v25.12.0-rc2`：指定版本标签
-   - `master`：上游主分支
-   - `custom`：自定义分支、标签或 commit，需要填写 `custom_ref`
 5. 等待编译完成后，在本次工作流的 `Artifacts`（构建产物）中下载固件。
 
 产物名称类似：
@@ -165,8 +163,7 @@ immortalwrt-<run_number>-m28c-<ref>
 
 | 参数 | 说明 |
 | --- | --- |
-| `immortalwrt_version` | 选择 ImmortalWrt 分支或标签，默认 `openwrt-25.12` |
-| `custom_ref` | 当版本选择 `custom` 时填写，例如某个分支、标签或 commit |
+| `immortalwrt_version` | 选择 ImmortalWrt 分支或标签，当前支持 `master` 和 `v25.12.0-rc2`，默认 `master` |
 | `profile` | 构建配置方案，目前只有 `m28c` |
 | `custom_config_repo` | 可选私人 OpenWrt 配置仓库 URL；留空则只使用本地 `files` |
 | `custom_config_branch` | 私人配置仓库分支、标签或可拉取引用，默认 `main` |
@@ -214,6 +211,7 @@ immortalwrt-<run_number>-m28c-<ref>
 
 - `build-immortalwrt.yml`：主工作流，也是唯一的实际构建实现。负责解析版本参数、释放磁盘空间、安装依赖、拉取 ImmortalWrt、恢复 `dl` 与 `ccache` 缓存、合并 feeds、准备软件包、应用补丁、注入 overlay、生成 `.config`、下载源码、编译固件并上传构建产物。
 - `build-immortalwrt-with-private-config.yml`：兼容入口。它保留“支持私人配置仓库”的手动运行入口，但内部调用 `build-immortalwrt.yml`，避免维护两份构建步骤。
+- `validate.yml`：轻量校验工作流。负责 Bash 语法检查、ShellCheck 和 `/usr/bin` overlay 回归测试，不执行完整固件编译。
 
 ### `configs/`
 

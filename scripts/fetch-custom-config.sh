@@ -16,7 +16,7 @@ REPO_URL="${2:-}"
 BRANCH="${3:-main}"
 TOKEN="${4:-${CUSTOM_CONFIG_TOKEN:-}}"
 
-[ -n "$OPENWRT_DIR" ] && [ -n "$REPO_URL" ] || die "Usage: $0 <openwrt-dir> <repo-url> [branch] [token]"
+[ -n "$OPENWRT_DIR" ] && [ -n "$REPO_URL" ] || die "用法: $0 <openwrt-dir> <repo-url> [branch] [token]"
 need_dir "$OPENWRT_DIR"
 
 PROJECT_DIR="${PROJECT_DIR:-$(project_dir)}"
@@ -94,9 +94,9 @@ fi
 # ===== 合并配置文件 =====
 echo "正在合并配置文件..."
 
-# 从私人仓库复制文件到目标位置
-# 使用 find 以确保正确处理目录结构，排除 /usr/bin（单独处理）
-# 忽略 .git 和其他特殊文件
+# 从私人仓库复制文件到目标位置。
+# prepare-overlay.sh 会先放置本地 files/，因此这里遇到已存在的目标文件时跳过，
+# 以保留本地 overlay 的最高优先级。排除 /usr/bin（单独处理）。
 find "$SRC_ROOT" -type f \
   ! -path '*/.git/*' \
   ! -path '*/usr/bin/*' \

@@ -18,12 +18,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 OPENWRT_DIR="${1:-${OPENWRT_DIR:-}}"
-[ -n "$OPENWRT_DIR" ] || die "Usage: $0 <openwrt-dir>"
+[ -n "$OPENWRT_DIR" ] || die "用法: $0 <openwrt-dir>"
 need_dir "$OPENWRT_DIR"
 
 PROJECT_DIR="${PROJECT_DIR:-$(project_dir)}"
 
-# 从私人仓库拉取配置（可选）
+# 先执行标准 overlay 阶段，让本地 files/ 成为明确的最高优先级。
+log "执行标准 overlay 阶段..."
+"$SCRIPT_DIR/stage-overlay.sh" "$OPENWRT_DIR"
+
+# 从私人仓库拉取配置（可选），只补充本地 files/ 尚未提供的目标文件。
 REPO_URL="${CUSTOM_CONFIG_REPO_URL:-}"
 if [ -n "$REPO_URL" ]; then
   BRANCH="${CUSTOM_CONFIG_BRANCH:-main}"
@@ -42,9 +46,5 @@ if [ -n "$REPO_URL" ]; then
     esac
   }
 fi
-
-# 执行标准的 overlay 阶段
-log "执行标准 overlay 阶段..."
-"$SCRIPT_DIR/stage-overlay.sh" "$OPENWRT_DIR"
 
 log "Overlay 准备完成"
