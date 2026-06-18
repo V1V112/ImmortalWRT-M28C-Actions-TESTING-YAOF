@@ -25,7 +25,7 @@ PROJECT_DIR="${PROJECT_DIR:-$(project_dir)}"
 
 # 先执行标准 overlay 阶段，让本地 files/ 成为明确的最高优先级。
 log "执行标准 overlay 阶段..."
-"$SCRIPT_DIR/stage-overlay.sh" "$OPENWRT_DIR"
+bash "$SCRIPT_DIR/stage-overlay.sh" "$OPENWRT_DIR"
 
 # 从私人仓库拉取配置（可选），只补充本地 files/ 尚未提供的目标文件。
 REPO_URL="${CUSTOM_CONFIG_REPO_URL:-}"
@@ -35,7 +35,7 @@ if [ -n "$REPO_URL" ]; then
   REQUIRED="${CUSTOM_CONFIG_REQUIRED:-false}"
   
   log "从私人仓库拉取配置文件..."
-  "$SCRIPT_DIR/fetch-custom-config.sh" "$OPENWRT_DIR" "$REPO_URL" "$BRANCH" "$TOKEN" || {
+  bash "$SCRIPT_DIR/fetch-custom-config.sh" "$OPENWRT_DIR" "$REPO_URL" "$BRANCH" "$TOKEN" || {
     case "${REQUIRED,,}" in
       1|true|yes|y)
         die "无法从私人仓库拉取配置，且 CUSTOM_CONFIG_REQUIRED=true"
