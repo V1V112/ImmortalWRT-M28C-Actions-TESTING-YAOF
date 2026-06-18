@@ -124,7 +124,9 @@ install_detected_binary() {
     fi
   done < <(find "$search_dir" -type f -print0)
 
-  [ -n "$best" ] && [ "$best_score" -gt 0 ] || die "在 $search_dir 中未找到可执行二进制或脚本"
+  if [ -z "$best" ] || [ "$best_score" -le 0 ]; then
+    die "在 $search_dir 中未找到可执行二进制或脚本"
+  fi
 
   case "$name_mode" in
     preferred)
@@ -146,5 +148,5 @@ install_detected_binary() {
   mkdir -p "$USR_BIN_DST"
   cp "$best" "$USR_BIN_DST/$dest_name"
   chmod 0755 "$USR_BIN_DST/$dest_name"
-  log "已从 ${best#$search_dir/} 安装 /usr/bin/$dest_name"
+  log "已从 ${best#"$search_dir"/} 安装 /usr/bin/$dest_name"
 }

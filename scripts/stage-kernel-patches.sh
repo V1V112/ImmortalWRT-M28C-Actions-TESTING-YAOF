@@ -28,7 +28,7 @@ stage_patches() {
   fi
   need_dir "$dst"
 
-  log "正在把内核补丁放入 ${dst#$OPENWRT_DIR/}"
+  log "正在把内核补丁放入 ${dst#"$OPENWRT_DIR"/}"
   rsync -a --include='*.patch' --exclude='*' "$src"/ "$dst"/
 }
 
@@ -39,7 +39,7 @@ apply_openwrt_patches() {
   [ -d "$src" ] || return 0
 
   while IFS= read -r -d '' patch_file; do
-    log "正在应用 OpenWrt 源码树补丁: ${patch_file#$PROJECT_DIR/}"
+    log "正在应用 OpenWrt 源码树补丁: ${patch_file#"$PROJECT_DIR"/}"
     patch -d "$OPENWRT_DIR" -p1 --forward < "$patch_file"
   done < <(find "$src" -name '*.patch' -type f -print0 | sort -z)
 }

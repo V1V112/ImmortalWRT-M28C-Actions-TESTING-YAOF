@@ -22,7 +22,7 @@ remove_if_exists() {
   local path="$1"
   if [ -e "$path" ] || [ -L "$path" ]; then
     rm -rf "$path"
-    log "已移除冲突软件包路径: ${path#$OPENWRT_DIR/}"
+    log "已移除冲突软件包路径: ${path#"$OPENWRT_DIR"/}"
   fi
 }
 
@@ -123,8 +123,9 @@ if [ -f "$PACKAGE_SOURCES" ]; then
     esac
 
     [ -z "${rest:-}" ] || die "$PACKAGE_SOURCES 中 $name 对应行的列数过多"
-    [ -n "${repo:-}" ] && [ -n "${ref:-}" ] && [ -n "${dest:-}" ] && [ -n "${subdir:-}" ] \
-      || die "$name 的软件包源码行无效"
+    if [ -z "${repo:-}" ] || [ -z "${ref:-}" ] || [ -z "${dest:-}" ] || [ -z "${subdir:-}" ]; then
+      die "$name 的软件包源码行无效"
+    fi
 
     clone_package_source "$name" "$repo" "$ref" "$dest" "$subdir"
   done < "$PACKAGE_SOURCES"
@@ -147,7 +148,7 @@ copy_local_package() {
   local base
 
   base="$(basename "$pkg")"
-  rm -rf "$LOCAL_DIR/$base"
+  rm -rf "${LOCAL_DIR:?}/$base"
   rsync -a --delete --exclude='.git' "$pkg"/ "$LOCAL_DIR/$base"/
   log "已复制本地软件包: package/local/$base"
 }

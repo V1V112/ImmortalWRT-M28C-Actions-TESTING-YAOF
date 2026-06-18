@@ -43,7 +43,7 @@ detect_from_patch() {
       sed -n 's/^[+[:space:]]*#define[[:space:]]\+BBR_VERSION[[:space:]]\+\([0-9]\+\).*/\1/p' "$patch_file" | head -n 1
     )"
     if [ -n "$version" ]; then
-      printf '%s\t%s\n' "$version" "${patch_file#$OPENWRT_DIR/}"
+      printf '%s\t%s\n' "$version" "${patch_file#"$OPENWRT_DIR"/}"
       return 0
     fi
   done < <(find "$dir" -maxdepth 1 -type f -name '*.patch' -print0 | sort -z)
@@ -58,7 +58,7 @@ detect_from_source() {
       sed -n 's/^[[:space:]]*#define[[:space:]]\+BBR_VERSION[[:space:]]\+\([0-9]\+\).*/\1/p' "$source_file" | head -n 1
     )"
     if [ -n "$version" ]; then
-      printf '%s\t%s\n' "$version" "${source_file#$OPENWRT_DIR/}"
+      printf '%s\t%s\n' "$version" "${source_file#"$OPENWRT_DIR"/}"
       return 0
     fi
   done < <(find "$OPENWRT_DIR/build_dir" -path '*/net/ipv4/tcp_bbr.c' -type f -print0 2>/dev/null || true)
@@ -123,12 +123,12 @@ if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
     printf '## %s\n\n' "$BBR_VERSION_PHASE"
     printf '| 项目 | 值 |\n'
     printf '| --- | --- |\n'
-    printf '| BBR_VERSION | `%s` |\n' "$detected_version"
-    printf '| 来源 | `%s` |\n' "$detected_source"
-    printf '| 内核补丁版本 | `%s` |\n' "$kernel_patchver"
+    printf "| BBR_VERSION | \`%s\` |\n" "$detected_version"
+    printf "| 来源 | \`%s\` |\n" "$detected_source"
+    printf "| 内核补丁版本 | \`%s\` |\n" "$kernel_patchver"
     if [ -n "${expected_version:-}" ]; then
-      printf '| 上一次 BBR_VERSION | `%s` |\n' "$expected_version"
-      printf '| 一致性 | `%s` |\n' "匹配"
+      printf "| 上一次 BBR_VERSION | \`%s\` |\n" "$expected_version"
+      printf "| 一致性 | \`%s\` |\n" "匹配"
     fi
   } >> "$GITHUB_STEP_SUMMARY"
 fi

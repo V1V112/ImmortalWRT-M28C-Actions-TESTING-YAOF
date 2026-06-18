@@ -16,7 +16,9 @@ REPO_URL="${2:-}"
 BRANCH="${3:-main}"
 TOKEN="${4:-${CUSTOM_CONFIG_TOKEN:-}}"
 
-[ -n "$OPENWRT_DIR" ] && [ -n "$REPO_URL" ] || die "用法: $0 <openwrt-dir> <repo-url> [branch] [token]"
+if [ -z "$OPENWRT_DIR" ] || [ -z "$REPO_URL" ]; then
+  die "用法: $0 <openwrt-dir> <repo-url> [branch] [token]"
+fi
 need_dir "$OPENWRT_DIR"
 
 PROJECT_DIR="${PROJECT_DIR:-$(project_dir)}"
@@ -106,7 +108,7 @@ find "$SRC_ROOT" -type f \
   ! -name 'LICENSE*' \
   ! -name '*.md' -print0 | while IFS= read -r -d '' src_file; do
   
-  rel_path="${src_file#$SRC_ROOT/}"
+  rel_path="${src_file#"$SRC_ROOT"/}"
   
   # 跳过仓库根目录直接的特殊文件（只在使用仓库根目录时）
   if [ "$SRC_ROOT" = "$TEMP_DIR" ]; then

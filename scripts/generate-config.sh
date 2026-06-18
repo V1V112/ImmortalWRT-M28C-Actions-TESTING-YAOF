@@ -8,7 +8,9 @@ source "$SCRIPT_DIR/common.sh"
 
 OPENWRT_DIR="${1:-${OPENWRT_DIR:-}}"
 PROFILE_DIR="${2:-}"
-[ -n "$OPENWRT_DIR" ] && [ -n "$PROFILE_DIR" ] || die "用法: $0 <openwrt-dir> <profile-dir>"
+if [ -z "$OPENWRT_DIR" ] || [ -z "$PROFILE_DIR" ]; then
+  die "用法: $0 <openwrt-dir> <profile-dir>"
+fi
 need_dir "$OPENWRT_DIR"
 need_dir "$PROFILE_DIR"
 
@@ -29,10 +31,10 @@ emit_package_config() {
   [ -n "$token" ] || return 0
 
   case "$token" in
-    \#*) return 0 ;;
-    CONFIG_*=*|"# CONFIG_"*" is not set")
+    CONFIG_*=*)
       printf '%s\n' "$token"
       ;;
+    \#*) return 0 ;;
     -*)
       pkg="${token#-}"
       [ -n "$pkg" ] && printf '# CONFIG_PACKAGE_%s is not set\n' "$pkg"
@@ -50,6 +52,13 @@ emit_package_config() {
 emit_packages_from_text() {
   local line token
   while IFS= read -r line || [ -n "$line" ]; do
+    line="${line//$'\r'/}"
+    case "$line" in
+      "# CONFIG_"*" is not set")
+        printf '%s\n' "$line"
+        continue
+        ;;
+    esac
     line="${line%%#*}"
     for token in $line; do
       emit_package_config "$token"

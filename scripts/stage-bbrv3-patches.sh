@@ -31,7 +31,7 @@ if [ ! -d "$src" ]; then
     done
   fi
   [ -n "$available" ] || available="无"
-  die "在 ${BBRV3_PATCH_ROOT#$PROJECT_DIR/} 下没有适用于内核 $kernel_patchver 的本地 BBRv3 补丁集。可用内核版本: $available"
+  die "在 ${BBRV3_PATCH_ROOT#"$PROJECT_DIR"/} 下没有适用于内核 $kernel_patchver 的本地 BBRv3 补丁集。可用内核版本: $available"
 fi
 
 dst="$OPENWRT_DIR/target/linux/generic/backport-$kernel_patchver"
@@ -39,9 +39,11 @@ dst="$OPENWRT_DIR/target/linux/generic/backport-$kernel_patchver"
 need_dir "$dst"
 
 patch_count="$(find "$src" -maxdepth 1 -type f -name '*.patch' | wc -l | tr -d '[:space:]')"
-[ "$patch_count" -gt 0 ] || die "在 ${src#$PROJECT_DIR/} 中未找到 BBRv3 补丁"
+if [ "$patch_count" -le 0 ]; then
+  die "在 ${src#"$PROJECT_DIR"/} 中未找到 BBRv3 补丁"
+fi
 
-log "正在把 $patch_count 个适用于内核 $kernel_patchver 的本地 BBRv3 补丁放入 ${dst#$OPENWRT_DIR/}"
+log "正在把 $patch_count 个适用于内核 $kernel_patchver 的本地 BBRv3 补丁放入 ${dst#"$OPENWRT_DIR"/}"
 while IFS= read -r -d '' patch_file; do
   cp "$patch_file" "$dst/"
 done < <(find "$src" -maxdepth 1 -type f -name '*.patch' -print0 | sort -z)
