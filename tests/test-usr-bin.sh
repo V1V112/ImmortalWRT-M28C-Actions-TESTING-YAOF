@@ -190,6 +190,26 @@ test_fetch_custom_config_remote_archive() {
   pass "fetch-custom-config 可处理私人仓库 /usr/bin 压缩包"
 }
 
+test_prepare_overlay_root_shell_scripts_executable() {
+  new_case "prepare-root-shell-scripts"
+
+  mkdir -p "$CASE_PROJECT_DIR/files/root/local"
+  write_script "$CASE_PROJECT_DIR/files/root/local/local-script.sh" "本地 root 脚本"
+  chmod 0644 "$CASE_PROJECT_DIR/files/root/local/local-script.sh"
+
+  REMOTE_REPO_DIR="$CASE_DIR/remote-repo"
+  mkdir -p "$REMOTE_REPO_DIR/files/root/remote"
+  write_script "$REMOTE_REPO_DIR/files/root/remote/remote-script.sh" "私人仓库 root 脚本"
+  chmod 0644 "$REMOTE_REPO_DIR/files/root/remote/remote-script.sh"
+  init_remote_repo "$REMOTE_REPO_DIR"
+
+  run_prepare_overlay
+
+  assert_executable "$CASE_OPENWRT_DIR/files/root/local/local-script.sh"
+  assert_executable "$CASE_OPENWRT_DIR/files/root/remote/remote-script.sh"
+  pass "prepare-overlay 可为本地和私人仓库 /root 下的 .sh 文件添加执行权限"
+}
+
 main() {
   require_cmd bash
   require_cmd git
@@ -202,6 +222,7 @@ main() {
   test_stage_overlay_archive_preferred_name
   test_prepare_overlay_preserves_local_priority
   test_fetch_custom_config_remote_archive
+  test_prepare_overlay_root_shell_scripts_executable
 }
 
 main "$@"

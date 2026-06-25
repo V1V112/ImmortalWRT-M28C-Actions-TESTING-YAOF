@@ -47,4 +47,11 @@ if [ -n "$REPO_URL" ]; then
   }
 fi
 
+# 本地与私人仓库配置合并完成后，确保固件 /root 下的 shell 脚本可执行。
+ROOT_HOME="$OPENWRT_DIR/files/root"
+if [ -d "$ROOT_HOME" ]; then
+  find "$ROOT_HOME" -type f -name '*.sh' -exec chmod a+x {} +
+  log "已为 /root 下的 .sh 文件添加可执行权限"
+fi
+
 log "Overlay 准备完成"
