@@ -60,6 +60,11 @@ vim
 usbutils
 pciutils
 
+# DDNS / Cloudflare IPv6（仅 ddns-scripts，不内置 LuCI DDNS 界面）
+ddns-scripts
+ddns-scripts-cloudflare
+-luci-app-ddns
+
 # Rockchip / MangoPi M28C 相关硬件支持
 kmod-hwmon-pwmfan
 kmod-aic8800-sdio
