@@ -95,6 +95,7 @@ kmod-usb-acm
 kmod-usb-wdm
 
 # QMI / MBIM / NCM / RNDIS / ECM 5G 拨号模式支持
+# 保留 qmodem 需要的 QMI/MBIM 支持，但移除 LuCI 的协议界面入口
 kmod-usb-net-qmi-wwan
 kmod-usb-net-cdc-mbim
 kmod-usb-net-cdc-ncm
@@ -106,8 +107,8 @@ umbim
 comgt
 comgt-ncm
 wwan
-luci-proto-qmi
-luci-proto-mbim
+-luci-proto-qmi
+-luci-proto-mbim
 
 # eBPF / 流控 / 透明代理辅助模块
 bpftool
