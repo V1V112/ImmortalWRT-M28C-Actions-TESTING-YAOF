@@ -127,8 +127,8 @@ at-webserver
 luci-app-at-webserver
 
 # SmartDNS
-smartdns
-luci-app-smartdns
+-smartdns
+-luci-app-smartdns
 
 # MosDNS
 mosdns
