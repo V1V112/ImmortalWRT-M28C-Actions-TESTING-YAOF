@@ -71,12 +71,13 @@ tc -s qdisc show dev eth0
 
 ### 5G 模块支持
 
-- 面向华为 MT5700 / 常见 USB 5G 模块预置驱动和管理组件。
+- 面向 MT5700M / 常见 USB 5G 模块预置驱动和管理组件。
 - 内置 USB 串口相关模块：`kmod-usb-serial`、`kmod-usb-serial-option`、`kmod-usb-serial-wwan`、`kmod-usb-acm`、`kmod-usb-wdm`。
 - 内置多种拨号链路支持：QMI、MBIM、NCM、Huawei NCM、RNDIS、CDC ECM。
-- 内置拨号工具和协议支持：`uqmi`、`umbim`、`comgt`、`comgt-ncm`、`wwan`、`luci-proto-qmi`、`luci-proto-mbim`。
-- 内置 QModem Next：`qmodem`、`luci-app-qmodem-next`、中文语言包和短信转发组件。
-- 内置 MT5700 AT WebServer / WebUI 相关本地包，便于通过网页查看和调试模块 AT 功能。
+- 内置通用拨号工具：`uqmi`、`umbim`、`comgt`、`comgt-ncm`、`wwan`。
+- 内置 `luci-app-mt5700m`，统一提供 MT5700M 状态、NCM/ECM 拨号、APN/PDP、网络与小区、短信、系统维护和 AT 终端。
+- 不再编译 QModem 主程序 / LuCI，也不再复制旧 MT5700 AT WebServer / WebUI；仅从 QModem 固定提交提取新管理器依赖的 `ubus-at-daemon` 与 `sms-tool_q`。
+- `luci-app-mt5700m` 的 QModem 衍生部分及上述底层依赖带非商业使用限制，发布或商用前请核对其 `QMODEM-NOTICE` 与 QModem 许可证。
 - 附带 MT5700 USB 串口识别补丁：`999-usb-serial-option-add-mt5700-3466-3301.patch`。
 
 ### DNS 与代理
@@ -211,7 +212,7 @@ immortalwrt-<run_number>-m28c-<ref>
 
 - `build-immortalwrt.yml`：主工作流，也是唯一的实际构建实现。负责解析版本参数、释放磁盘空间、安装依赖、拉取 ImmortalWrt、恢复 `dl` 与 `ccache` 缓存、合并 feeds、准备软件包、应用补丁、注入 overlay、生成 `.config`、下载源码、编译固件并上传构建产物。
 - `build-immortalwrt-with-private-config.yml`：兼容入口。它保留“支持私人配置仓库”的手动运行入口，但内部调用 `build-immortalwrt.yml`，避免维护两份构建步骤。
-- `validate.yml`：轻量校验工作流。负责 Bash 语法检查、ShellCheck 和 `/usr/bin` overlay 回归测试，不执行完整固件编译。
+- `validate.yml`：轻量校验工作流。负责 Bash 语法检查、ShellCheck、`/usr/bin` overlay 回归测试和 MT5700M 软件包切换校验，不执行完整固件编译。
 
 ### `configs/`
 
@@ -239,7 +240,7 @@ immortalwrt-<run_number>-m28c-<ref>
 
 保存 rootfs overlay。这里的路径会映射到固件根目录。
 
-- `files/etc/config/`：预置 UCI 配置，例如网络、防火墙、LuCI、SmartDNS、MosDNS、QModem、momo、ttyd 等。
+- `files/etc/config/`：可用于预置网络、防火墙、LuCI、SmartDNS、MosDNS、momo、ttyd 等 UCI 配置。
 - `files/etc/momo/`：momo 运行目录、缓存和 WebUI 资源。
 - `files/etc/mosdns/`：MosDNS 相关配置和资源。
 - `files/etc/smartdns/`：SmartDNS 相关配置。
@@ -262,7 +263,7 @@ files/www/luci-static/x   ->  /www/luci-static/x
 当前包含：
 
 - `luci-app-fancontrol-main/`：风扇控制程序和 LuCI 页面源码，当前默认不编入固件。
-- `mt5700webui-openwrt-server-main/`：MT5700 AT WebServer 和对应 LuCI / WebUI 资源。
+- `mt5700webui-openwrt-server-main/`：已停用的旧 MT5700 AT WebServer / WebUI，仅保留作历史参考；目录内的 `.disabled` 会阻止构建脚本复制它。
 
 支持的目录结构：
 
@@ -270,6 +271,8 @@ files/www/luci-static/x   ->  /www/luci-static/x
 local-packages/<package-name>/Makefile
 local-packages/<collection>/<package-name>/Makefile
 ```
+
+在顶层包目录或集合目录放置 `.disabled`，可阻止它被复制，并清理复用构建树中的同名旧副本。
 
 只有包源码存在还不够，仍需把包名写进 `profiles/m28c/packages.txt` 才会被编入固件。
 
@@ -371,12 +374,15 @@ feeds/package-sources.conf
 <name> <repo-url> <ref> <destination-dir> <source-subdir>
 ```
 
+`ref` 可写分支、标签或完整 40 位 commit SHA；`source-subdir` 可指向目录或单个文件。同一仓库和引用出现多次时，准备脚本只克隆一次。
+
 当前默认单包源码：
 
 - `mosdns`：`https://github.com/sbwml/luci-app-mosdns.git`
 - `v2ray-geodata`：`https://github.com/sbwml/v2ray-geodata.git`
 - `momo`：`https://github.com/nikkinikki-org/OpenWrt-momo.git`
-- `qmodem`：`https://github.com/FUjr/QModem.git`
+- `mt5700m`：`https://github.com/FAN789/luci-app-mt5700m.git`，固定到当前 `2.2.1-r1` 对应提交。
+- `mt5700m-at-daemon`、`mt5700m-sms-tool`：从 `https://github.com/FUjr/QModem.git` 的固定提交中仅提取两个底层依赖包。
 
 ## 本地调试参考
 
@@ -430,5 +436,6 @@ make -j"$(nproc)"
 - ImmortalWrt: https://github.com/immortalwrt/immortalwrt
 - Momo: https://github.com/nikkinikki-org/OpenWrt-momo
 - MosDNS: https://github.com/sbwml/luci-app-mosdns
+- MT5700M Manager: https://github.com/FAN789/luci-app-mt5700m
 - QModem: https://github.com/FUjr/QModem
 - Fan Control: https://github.com/rockjake/luci-app-fancontrol

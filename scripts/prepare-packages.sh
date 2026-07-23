@@ -63,21 +63,65 @@ else
   warn "未找到 packages-to-remove 配置，跳过软件包移除"
 fi
 
-clone_package_source() {
+# 清理旧版本由本脚本管理的完整 QModem 源码目录，避免复用构建树时残留。
+remove_if_exists "$CUSTOM_DIR/qmodem"
+
+declare -A SOURCE_CLONE_CACHE=()
+
+clone_git_source() {
   local name="$1"
   local repo="$2"
   local ref="$3"
-  local dest_rel="$4"
-  local subdir="$5"
-  local clone_dir="$tmp_dir/$name"
-  local dest="$OPENWRT_DIR/$dest_rel"
-  local src
+  local clone_dir="$4"
+  local resolved_ref
+
+  if [[ "$ref" =~ ^[0-9a-fA-F]{40}$ ]]; then
+    log "正在克隆软件包源码: $name ($ref)"
+    mkdir -p "$clone_dir"
+    git -C "$clone_dir" init -q
+    git -C "$clone_dir" remote add origin "$repo"
+
+    if ! git -C "$clone_dir" fetch --depth 1 --filter=blob:none origin "$ref"; then
+      warn "$name 的过滤抓取失败，将不使用 blob 过滤重试"
+      rm -rf "$clone_dir"
+      mkdir -p "$clone_dir"
+      git -C "$clone_dir" init -q
+      git -C "$clone_dir" remote add origin "$repo"
+      git -C "$clone_dir" fetch --depth 1 origin "$ref"
+    fi
+
+    git -C "$clone_dir" checkout -q --detach FETCH_HEAD
+    resolved_ref="$(git -C "$clone_dir" rev-parse HEAD)"
+    [ "$resolved_ref" = "$ref" ] || die "$name 检出的提交不匹配: $resolved_ref"
+    return 0
+  fi
 
   log "正在克隆软件包源码: $name ($ref)"
   if ! git clone --depth 1 --filter=blob:none --branch "$ref" "$repo" "$clone_dir"; then
     warn "$name 的过滤克隆失败，将不使用 blob 过滤重试"
     rm -rf "$clone_dir"
     git clone --depth 1 --branch "$ref" "$repo" "$clone_dir"
+  fi
+}
+
+clone_package_source() {
+  local name="$1"
+  local repo="$2"
+  local ref="$3"
+  local dest_rel="$4"
+  local subdir="$5"
+  local cache_key="${repo}|${ref}"
+  local clone_dir
+  local dest="$OPENWRT_DIR/$dest_rel"
+  local src
+
+  clone_dir="${SOURCE_CLONE_CACHE[$cache_key]:-}"
+  if [ -n "$clone_dir" ]; then
+    log "正在复用软件包源码: $name ($ref)"
+  else
+    clone_dir="$tmp_dir/$name"
+    clone_git_source "$name" "$repo" "$ref" "$clone_dir"
+    SOURCE_CLONE_CACHE["$cache_key"]="$clone_dir"
   fi
 
   if [ "$subdir" = "." ]; then
@@ -86,30 +130,14 @@ clone_package_source() {
     src="$clone_dir/$subdir"
   fi
 
-  need_dir "$src"
   rm -rf "$dest"
   mkdir -p "$(dirname "$dest")"
-  rsync -a --delete --exclude='.git' "$src"/ "$dest"/
-}
-
-customize_qmodem_menu() {
-  local menu_file="$OPENWRT_DIR/package/custom/qmodem/luci/luci-app-qmodem-next/root/usr/share/luci/menu.d/luci-app-qmodem-next.json"
-
-  [ -f "$menu_file" ] || return 0
-
-  log "正在把 QModem LuCI 菜单移动到网络分类下"
-  perl -0pi -e '
-    s/\n\t"admin\/modem": \{.*?\n\t\},//s;
-    s/"admin\/modem\/qmodem/"admin\/network\/qmodem/g;
-    s/"title": "QModem"/"title": "调制解调器"/;
-  ' "$menu_file"
-
-  grep -q '"admin/network/qmodem"' "$menu_file" \
-    || die "移动 QModem 菜单到网络分类失败"
-  grep -q '"title": "调制解调器"' "$menu_file" \
-    || die "重命名 QModem 菜单标题失败"
-  if grep -q '"admin/modem' "$menu_file"; then
-    die "QModem 菜单仍包含 admin/modem 条目"
+  if [ -d "$src" ]; then
+    rsync -a --delete --exclude='.git' "$src"/ "$dest"/
+  elif [ -f "$src" ]; then
+    cp -a "$src" "$dest"
+  else
+    die "软件包源码路径不存在: $src"
   fi
 }
 
@@ -130,8 +158,6 @@ if [ -f "$PACKAGE_SOURCES" ]; then
     clone_package_source "$name" "$repo" "$ref" "$dest" "$subdir"
   done < "$PACKAGE_SOURCES"
 fi
-
-customize_qmodem_menu
 
 if [ "${SMARTDNS_PREBUILT_AUTO_UPDATE:-1}" != "0" ]; then
   log "正在把 smartdns-prebuilt 更新到 PikuZheng/smartdns 最新发布"
@@ -160,6 +186,20 @@ for pkg in "$PROJECT_DIR"/local-packages/*; do
   esac
 
   if [ -d "$pkg" ]; then
+    if [ -f "$pkg/.disabled" ]; then
+      if [ -f "$pkg/Makefile" ]; then
+        remove_if_exists "$LOCAL_DIR/$base"
+      else
+        for nested_pkg in "$pkg"/*; do
+          [ -d "$nested_pkg" ] || continue
+          [ -f "$nested_pkg/Makefile" ] || continue
+          remove_if_exists "$LOCAL_DIR/$(basename "$nested_pkg")"
+        done
+      fi
+      log "已跳过禁用的本地软件包源码: $base"
+      continue
+    fi
+
     if [ -f "$pkg/Makefile" ]; then
       copy_local_package "$pkg"
       continue

@@ -264,7 +264,34 @@ jobs:
           scripts/generate-config.sh "$OPENWRT_DIR" "profiles/${{ inputs.profile }}"
           cd "$OPENWRT_DIR"
           make defconfig
-          grep -E 'CONFIG_TARGET_rockchip|CONFIG_TARGET_PROFILE|CONFIG_TARGET_ROOTFS|CONFIG_TARGET_IMAGES_GZIP|CONFIG_LUCI_LANG_zh_Hans|CONFIG_KERNEL_(DEBUG_INFO|DEBUG_INFO_BTF|BPF_EVENTS|CGROUPS|CGROUP_BPF|XDP_SOCKETS)|CONFIG_PACKAGE_(luci|luci-base|luci-i18n-base-zh-cn|momo|luci-app-momo|luci-theme-argon|luci-app-argon-config|ttyd|luci-app-ttyd|qmodem|luci-app-qmodem-next|at-webserver|luci-app-at-webserver|bpftool|kmod-tcp-bbr|kmod-sched|kmod-nft-tproxy|kmod-usb-serial-option|kmod-hwmon-pwmfan|luci-app-cpufreq|luci-i18n-cpufreq-zh-cn)' .config || true
+          grep -E 'CONFIG_TARGET_rockchip|CONFIG_TARGET_PROFILE|CONFIG_TARGET_ROOTFS|CONFIG_TARGET_IMAGES_GZIP|CONFIG_LUCI_LANG_zh_Hans|CONFIG_KERNEL_(DEBUG_INFO|DEBUG_INFO_BTF|BPF_EVENTS|CGROUPS|CGROUP_BPF|XDP_SOCKETS)|CONFIG_PACKAGE_(luci|luci-base|luci-i18n-base-zh-cn|momo|luci-app-momo|luci-theme-argon|luci-app-argon-config|ttyd|luci-app-ttyd|luci-app-mt5700m|luci-i18n-mt5700m-zh-cn|ubus-at-daemon|sms-tool_q|qmodem|luci-app-qmodem-next|at-webserver|luci-app-at-webserver|luci-i18n-at-webserver-zh-cn|bpftool|kmod-tcp-bbr|kmod-sched|kmod-nft-tproxy|kmod-usb-serial-option|kmod-hwmon-pwmfan|luci-app-cpufreq|luci-i18n-cpufreq-zh-cn)' .config || true
+          for package in \
+            luci-app-mt5700m \
+            luci-i18n-mt5700m-zh-cn \
+            ubus-at-daemon \
+            sms-tool_q; do
+            if ! grep -qx "CONFIG_PACKAGE_${package}=y" .config; then
+              echo "错误：make defconfig 后未启用 ${package}。"
+              exit 1
+            fi
+          done
+          for package in \
+            qmodem \
+            luci-app-qmodem \
+            luci-app-qmodem-next \
+            luci-i18n-qmodem-next-zh-cn \
+            sms-forwarder-next \
+            modem_scan \
+            tom_modem \
+            qmodem_monitor \
+            at-webserver \
+            luci-app-at-webserver \
+            luci-i18n-at-webserver-zh-cn; do
+            if grep -Eq "^CONFIG_PACKAGE_${package}=(y|m)$" .config; then
+              echo "错误：已禁用的旧组件 ${package} 仍被选中。"
+              exit 1
+            fi
+          done
           if ! grep -qx 'CONFIG_LUCI_LANG_zh_Hans=y' .config; then
             echo "错误：make defconfig 后未启用 CONFIG_LUCI_LANG_zh_Hans。"
             echo "在 master 分支中，LuCI 翻译包通过该语言选项隐藏选择。"

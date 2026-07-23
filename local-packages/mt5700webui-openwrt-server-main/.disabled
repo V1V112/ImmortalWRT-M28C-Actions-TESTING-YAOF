@@ -1,0 +1,2 @@
+旧版 MT5700 AT WebServer / WebUI 已停用。
+固件改用 FAN789/luci-app-mt5700m 提供拨号、状态、短信和 AT 管理功能。

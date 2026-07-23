@@ -80,11 +80,21 @@ kmod-usb-storage
 block-mount
 kmod-usb-net
 
-# QModem-next / 5G 模块管理插件
-qmodem
-sms-forwarder-next
-luci-app-qmodem-next
-luci-i18n-qmodem-next-zh-cn
+# MT5700M 专用拨号与管理
+luci-app-mt5700m
+luci-i18n-mt5700m-zh-cn
+ubus-at-daemon
+sms-tool_q
+
+# 禁用 QModem 主程序、LuCI 和附属服务；仅保留上面的 AT / 短信底层依赖
+-qmodem
+-luci-app-qmodem
+-luci-app-qmodem-next
+-luci-i18n-qmodem-next-zh-cn
+-sms-forwarder-next
+-modem_scan
+-tom_modem
+-qmodem_monitor
 
 # USB 串口 / AT 口 / 5G 模块识别支持
 kmod-usb-serial
@@ -95,7 +105,7 @@ kmod-usb-acm
 kmod-usb-wdm
 
 # QMI / MBIM / NCM / RNDIS / ECM 5G 拨号模式支持
-# 保留 qmodem 需要的 QMI/MBIM 支持，但移除 LuCI 的协议界面入口
+# 保留通用 QMI/MBIM 支持，但移除 LuCI 的协议界面入口
 kmod-usb-net-qmi-wwan
 kmod-usb-net-cdc-mbim
 kmod-usb-net-cdc-ncm
@@ -122,9 +132,10 @@ momo
 luci-app-momo
 luci-i18n-momo-zh-cn
 
-# MT5700 AT WebServer / 网页界面
-at-webserver
-luci-app-at-webserver
+# 禁用旧 MT5700 AT WebServer / WebUI
+-at-webserver
+-luci-app-at-webserver
+-luci-i18n-at-webserver-zh-cn
 
 # SmartDNS
 -smartdns

@@ -10,6 +10,7 @@ on:
       - "feeds/**"
       - "profiles/**"
       - "configs/**"
+      - "local-packages/**"
   pull_request:
     paths:
       - ".github/workflows/**"
@@ -18,6 +19,7 @@ on:
       - "feeds/**"
       - "profiles/**"
       - "configs/**"
+      - "local-packages/**"
 
 permissions:
   contents: read
@@ -50,3 +52,7 @@ jobs:
       - name: /usr/bin overlay 回归测试
         run: |
           bash tests/test-usr-bin.sh
+
+      - name: MT5700M 软件包切换校验
+        run: |
+          bash tests/test-mt5700m-selection.sh
