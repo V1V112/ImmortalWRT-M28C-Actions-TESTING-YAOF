@@ -86,7 +86,7 @@ if grep -Eq '^qmodem[[:space:]]' "$SOURCES"; then
 fi
 
 [ -f "$LEGACY_MARKER" ] || fail "旧 MT5700 WebUI 缺少 .disabled 标记"
-grep -Fq 'remove_if_exists "$CUSTOM_DIR/qmodem"' "$PREPARE_SCRIPT" \
+grep -Fq "remove_if_exists \"\$CUSTOM_DIR/qmodem\"" "$PREPARE_SCRIPT" \
   || fail "prepare-packages.sh 未清理旧 QModem 源码目录"
 if grep -Fq 'customize_qmodem_menu' "$PREPARE_SCRIPT"; then
   fail "prepare-packages.sh 仍包含 QModem 菜单定制"
