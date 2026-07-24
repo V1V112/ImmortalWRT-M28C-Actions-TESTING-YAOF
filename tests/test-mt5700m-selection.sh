@@ -71,14 +71,14 @@ done
 
 assert_source \
   mt5700m \
-  https://github.com/FAN789/luci-app-mt5700m.git \
-  88540743aa16d62476c058408d05055dc5c07fc5 \
+  https://github.com/V1V112/luci-app-mt5700m.git \
+  main \
   package/custom/luci-app-mt5700m \
   luci-app-mt5700m
 
 for source_name in mt5700m-at-daemon mt5700m-sms-tool mt5700m-deps-version mt5700m-deps-license; do
-  grep -Eq "^${source_name} https://github\\.com/FUjr/QModem\\.git 6f84b7935921cce6a215171af5e93cad62f8a5a5 " "$SOURCES" \
-    || fail "QModem 固定依赖定义不匹配: $source_name"
+  grep -Eq "^${source_name} https://github\\.com/FUjr/QModem\\.git main " "$SOURCES" \
+    || fail "QModem 依赖定义不匹配: $source_name"
 done
 
 if grep -Eq '^qmodem[[:space:]]' "$SOURCES"; then
