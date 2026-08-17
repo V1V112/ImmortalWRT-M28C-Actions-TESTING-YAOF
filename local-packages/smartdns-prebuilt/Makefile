@@ -9,19 +9,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=smartdns-prebuilt
-PKG_VERSION:=1.2026.48.1.5
+PKG_VERSION:=1.2026.48.4.1
 PKG_RELEASE:=1
 
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_MAINTAINER:=PikuZheng
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-$(PKG_RELEASE)
 
-SMARTDNS_UPSTREAM_VERSION:=1.2026.v48.1.5
-SMARTDNS_RELEASE_TAG:=1.2026.v48.1.5_with_ui
+SMARTDNS_UPSTREAM_VERSION:=1.2026.v48.4.1
+SMARTDNS_RELEASE_TAG:=1.2026.v48.4.1_with_ui
 SMARTDNS_RELEASE_URL:=https://github.com/PikuZheng/smartdns/releases/download/$(SMARTDNS_RELEASE_TAG)
 
 SMARTDNS_PREBUILT_FILE:=smartdns_with_ui.$(SMARTDNS_UPSTREAM_VERSION).aarch64.ipk
-SMARTDNS_PREBUILT_HASH:=ca88de7d3c7f356ddbdbbcc33c22a911174e558f58fca97f5b1e96e43eb320a2
+SMARTDNS_PREBUILT_HASH:=1d36a43c7515171b40b628c3edea035c92545122dccc60d02cb670b9eb9a46ba
 
 # PikuZheng 的 with_ui IPK 会把 SmartDNS 后端和内置面板都打进 smartdns 包。
 # LuCI 包源保持独立，确保现有 profile 中的 luci-app-smartdns 包名仍能解析。

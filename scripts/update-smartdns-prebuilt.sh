@@ -18,6 +18,7 @@ import os
 import re
 import sys
 import tempfile
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -25,6 +26,9 @@ makefile_path = Path(sys.argv[1])
 repo = os.environ.get("SMARTDNS_PREBUILT_REPO", "PikuZheng/smartdns")
 arch = os.environ.get("SMARTDNS_PREBUILT_ARCH", "aarch64")
 include_prerelease = os.environ.get("SMARTDNS_PREBUILT_ALLOW_PRERELEASE", "0") == "1"
+api_root = os.environ.get("SMARTDNS_PREBUILT_API_ROOT", "https://api.github.com").rstrip("/")
+releases_per_page = 30
+max_release_pages = 10
 asset_re = re.compile(rf"^smartdns_with_ui\.(?P<version>.+)\.{re.escape(arch)}\.ipk$")
 
 headers = {
@@ -74,24 +78,47 @@ def set_var(text, name, value):
     return text
 
 
-releases = fetch_json(f"https://api.github.com/repos/{repo}/releases?per_page=30")
-
-selected = None
-for release in releases:
+def select_asset(release):
     if release.get("draft"):
-        continue
+        return None
     if release.get("prerelease") and not include_prerelease:
-        continue
+        return None
     for asset in release.get("assets", []):
         match = asset_re.match(asset.get("name", ""))
         if match:
-            selected = (release, asset, match.group("version"))
+            return release, asset, match.group("version")
+    return None
+
+
+# PikuZheng/smartdns may return an empty releases collection even though its
+# designated latest release is available, so query that endpoint first.
+latest_release = fetch_json(f"{api_root}/repos/{repo}/releases/latest")
+if not isinstance(latest_release, dict):
+    raise SystemExit(f"{repo} latest release API 返回了无效数据")
+
+selected = select_asset(latest_release)
+pages_checked = 0
+for page in range(1, max_release_pages + 1) if not selected else ():
+    query = urllib.parse.urlencode({"per_page": releases_per_page, "page": page})
+    releases = fetch_json(f"{api_root}/repos/{repo}/releases?{query}")
+    if not isinstance(releases, list):
+        raise SystemExit(f"{repo} releases API 返回了无效数据")
+
+    pages_checked = page
+    for release in releases:
+        selected = select_asset(release)
+        if selected:
             break
     if selected:
         break
+    if len(releases) < releases_per_page:
+        break
 
 if not selected:
-    raise SystemExit(f"未在 {repo} 的最新发布中找到 smartdns_with_ui *.{arch}.ipk 资产")
+    raise SystemExit(
+        f"未在 {repo} 的 latest release 及最近 {pages_checked} 页发布中找到 "
+        f"smartdns_with_ui.*.{arch}.ipk 资产"
+    )
 
 release, asset, upstream_version = selected
 tag = release["tag_name"]
@@ -107,7 +134,7 @@ text = set_var(text, "PKG_RELEASE", "1")
 text = set_var(text, "SMARTDNS_UPSTREAM_VERSION", upstream_version)
 text = set_var(text, "SMARTDNS_RELEASE_TAG", tag)
 text = set_var(text, "SMARTDNS_PREBUILT_HASH", sha256)
-makefile_path.write_text(text, encoding="utf-8")
+makefile_path.write_text(text, encoding="utf-8", newline="\n")
 
 print(f"smartdns-prebuilt: 已更新为 {repo} {tag} {asset['name']} sha256={sha256}")
 PY

@@ -56,3 +56,7 @@ jobs:
       - name: MT5700M 软件包切换校验
         run: |
           bash tests/test-mt5700m-selection.sh
+
+      - name: SmartDNS 预编译包 latest 与分页更新校验
+        run: |
+          bash tests/test-smartdns-prebuilt-update.sh
