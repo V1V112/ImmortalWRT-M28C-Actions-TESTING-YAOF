@@ -49,12 +49,13 @@ assert_source() {
 for package in \
   luci-app-mt5700m \
   luci-i18n-mt5700m-zh-cn \
-  ubus-at-daemon \
-  sms-tool_q; do
+  mt5700m-transport; do
   assert_profile_line "$package"
 done
 
 for package in \
+  ubus-at-daemon \
+  sms-tool_q \
   qmodem \
   luci-app-qmodem \
   luci-app-qmodem-next \
@@ -76,10 +77,16 @@ assert_source \
   package/custom/luci-app-mt5700m \
   luci-app-mt5700m
 
-for source_name in mt5700m-at-daemon mt5700m-sms-tool mt5700m-deps-version mt5700m-deps-license; do
-  grep -Eq "^${source_name} https://github\\.com/FUjr/QModem\\.git main " "$SOURCES" \
-    || fail "QModem 依赖定义不匹配: $source_name"
-done
+assert_source \
+  mt5700m-transport \
+  https://github.com/V1V112/luci-app-mt5700m.git \
+  main \
+  package/custom/mt5700m-transport \
+  mt5700m-transport
+
+if grep -Eq '^mt5700m-(at-daemon|sms-tool|deps-version|deps-license)[[:space:]]' "$SOURCES"; then
+  fail "仍在克隆旧版 MT5700M 依赖"
+fi
 
 if grep -Eq '^qmodem[[:space:]]' "$SOURCES"; then
   fail "仍在克隆完整 QModem 源码"
@@ -88,6 +95,8 @@ fi
 [ -f "$LEGACY_MARKER" ] || fail "旧 MT5700 WebUI 缺少 .disabled 标记"
 grep -Fq "remove_if_exists \"\$CUSTOM_DIR/qmodem\"" "$PREPARE_SCRIPT" \
   || fail "prepare-packages.sh 未清理旧 QModem 源码目录"
+grep -Fq "remove_if_exists \"\$CUSTOM_DIR/mt5700m-deps\"" "$PREPARE_SCRIPT" \
+  || fail "prepare-packages.sh 未清理旧 MT5700M 依赖目录"
 if grep -Fq 'customize_qmodem_menu' "$PREPARE_SCRIPT"; then
   fail "prepare-packages.sh 仍包含 QModem 菜单定制"
 fi

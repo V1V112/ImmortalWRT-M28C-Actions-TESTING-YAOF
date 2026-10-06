@@ -83,10 +83,11 @@ kmod-usb-net
 # MT5700M 专用拨号与管理
 luci-app-mt5700m
 luci-i18n-mt5700m-zh-cn
-ubus-at-daemon
-sms-tool_q
+mt5700m-transport
 
-# 禁用 QModem 主程序、LuCI 和附属服务；仅保留上面的 AT / 短信底层依赖
+# 禁用旧版 AT / 短信组件以及 QModem 主程序、LuCI 和附属服务
+-ubus-at-daemon
+-sms-tool_q
 -qmodem
 -luci-app-qmodem
 -luci-app-qmodem-next

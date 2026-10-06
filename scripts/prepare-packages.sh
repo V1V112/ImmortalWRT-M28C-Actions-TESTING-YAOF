@@ -63,8 +63,9 @@ else
   warn "未找到 packages-to-remove 配置，跳过软件包移除"
 fi
 
-# 清理旧版本由本脚本管理的完整 QModem 源码目录，避免复用构建树时残留。
+# 清理旧版本由本脚本管理的 QModem 与 MT5700M 依赖目录，避免复用构建树时残留。
 remove_if_exists "$CUSTOM_DIR/qmodem"
+remove_if_exists "$CUSTOM_DIR/mt5700m-deps"
 
 declare -A SOURCE_CLONE_CACHE=()
 

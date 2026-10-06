@@ -76,8 +76,8 @@ tc -s qdisc show dev eth0
 - 内置多种拨号链路支持：QMI、MBIM、NCM、Huawei NCM、RNDIS、CDC ECM。
 - 内置通用拨号工具：`uqmi`、`umbim`、`comgt`、`comgt-ncm`、`wwan`。
 - 内置 `luci-app-mt5700m`，统一提供 MT5700M 状态、NCM/ECM 拨号、APN/PDP、网络与小区、短信、系统维护和 AT 终端。
-- 不再编译 QModem 主程序 / LuCI，也不再复制旧 MT5700 AT WebServer / WebUI；仅从 QModem 固定提交提取新管理器依赖的 `ubus-at-daemon` 与 `sms-tool_q`。
-- `luci-app-mt5700m` 的 QModem 衍生部分及上述底层依赖带非商业使用限制，发布或商用前请核对其 `QMODEM-NOTICE` 与 QModem 许可证。
+- 同时编入自有原生传输包 `mt5700m-transport`，负责串口/TCP AT 与短信传输；插件运行时不依赖 `ubus-at-daemon`、`sms-tool_q` 或 QModem 服务。
+- 两个软件包的自有代码按 Apache-2.0 发布；历史 QModem 来源及许可边界见插件仓库的 `QMODEM-NOTICE`。
 - 附带 MT5700 USB 串口识别补丁：`999-usb-serial-option-add-mt5700-3466-3301.patch`。
 
 ### DNS 与代理
@@ -381,8 +381,8 @@ feeds/package-sources.conf
 - `mosdns`：`https://github.com/sbwml/luci-app-mosdns.git`
 - `v2ray-geodata`：`https://github.com/sbwml/v2ray-geodata.git`
 - `momo`：`https://github.com/nikkinikki-org/OpenWrt-momo.git`
-- `mt5700m`：`https://github.com/FAN789/luci-app-mt5700m.git`，固定到当前 `2.2.1-r1` 对应提交。
-- `mt5700m-at-daemon`、`mt5700m-sms-tool`：从 `https://github.com/FUjr/QModem.git` 的固定提交中仅提取两个底层依赖包。
+- `mt5700m`：从 `https://github.com/V1V112/luci-app-mt5700m.git` 的 `main` 分支提取 `luci-app-mt5700m/`，复制到 `package/custom/luci-app-mt5700m/`（当前应用版本 `3.0.3-r1`）。
+- `mt5700m-transport`：复用同一仓库和分支，提取 `mt5700m-transport/`，复制到 `package/custom/mt5700m-transport/`（当前原生传输包版本 `1.0.1-r1`）。
 
 ## 本地调试参考
 
@@ -436,6 +436,5 @@ make -j"$(nproc)"
 - ImmortalWrt: https://github.com/immortalwrt/immortalwrt
 - Momo: https://github.com/nikkinikki-org/OpenWrt-momo
 - MosDNS: https://github.com/sbwml/luci-app-mosdns
-- MT5700M Manager: https://github.com/FAN789/luci-app-mt5700m
-- QModem: https://github.com/FUjr/QModem
+- MT5700M Manager: https://github.com/V1V112/luci-app-mt5700m
 - Fan Control: https://github.com/rockjake/luci-app-fancontrol
